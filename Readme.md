@@ -86,6 +86,11 @@ certain local dependees are using the latest changes.
 
 Note that `linklocal` does not run `npm install` for you.
 
+## See Also
+
+* [aperture](https://github.com/requireio/aperture)
+* [district](https://github.com/hughsk/district)
+* [symlink](https://github.com/clux/symlink)
 
 # License
 
