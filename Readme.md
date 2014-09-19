@@ -56,7 +56,7 @@ changes can be instantly consumed by dependees.
 
 ### Linking
 
-`linklocal` creates symlinks to your local dependencies.
+`linklocal` creates symlinks to any local dependencies it finds in your package.json.
 
 ```
 > linklocal
