@@ -10,7 +10,7 @@
     "npm": ">=2.0.0"
   },
   "author": "Tim Oxley <secoif@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "tape": "~3.0.0"
   },
