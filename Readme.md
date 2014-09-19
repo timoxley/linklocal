@@ -1,6 +1,6 @@
 # linklocal
 
-### Create symlinks to your local dependencies.
+### Create symlinks to local dependencies in your package.json.
 
 Requires npm 2.0.0 and above.
 
