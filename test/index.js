@@ -74,3 +74,18 @@ test('unlink ignores if package not linked', function(t) {
     })
   })
 })
+
+test('can handle zero dependencies', function(t) {
+  setup()
+  var PKG_DIR = path.resolve(__dirname, 'empty')
+  linklocal(PKG_DIR, function(err, linked) {
+    t.ifError(err)
+    t.ok(linked)
+    t.deepEqual(linked, [])
+    linklocal.unlink(PKG_DIR, function(err, unlinked) {
+      t.ifError(err)
+      t.deepEqual(linked, [])
+      t.end()
+    })
+  })
+})

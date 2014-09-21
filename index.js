@@ -12,11 +12,11 @@ module.exports = function linklocal(dirname, done) {
   done = once(done)
   findup(dirname, 'package.json', function(err, root) {
     if (err) return done(err)
-    var locals = getLocals(root)
     var node_modules = path.join(
       root = path.resolve(root || dirname),
       'node_modules'
     )
+    var locals = getLocals(root) || []
     doLink(locals, node_modules, done)
   })
 }
@@ -25,11 +25,11 @@ module.exports.unlink = function unlinklocal(dirname, done) {
   done = once(done)
   findup(dirname, 'package.json', function(err, root) {
     if (err) return done(err)
-    var locals = getLocals(root)
     var node_modules = path.join(
       root = path.resolve(root || dirname),
       'node_modules'
     )
+    var locals = getLocals(root) || []
     doUnlink(locals, node_modules, done)
   })
 }
@@ -57,8 +57,10 @@ function isLocal(val) {
 }
 
 function doLink(packages, node_modules, done) {
+  packages = packages || []
   var pending = packages.length
   var dests = []
+  if (!packages.length) return done(null, [])
   packages.forEach(function(dir) {
     var pkg = require(path.resolve(dir, 'package.json'))
     var name = pkg.name
@@ -90,8 +92,10 @@ function doLink(packages, node_modules, done) {
 }
 
 function doUnlink(packages, node_modules, done) {
+  packages = packages || []
   var pending = packages.length
   var dests = []
+  if (!packages.length) return done(null, [])
   packages.forEach(function(dir) {
     var pkg = require(path.resolve(dir, 'package.json'))
     var name = pkg.name

@@ -33,7 +33,9 @@ var dir = path.resolve(process.cwd(), program.args[0]) || process.cwd()
 
 linklocal[command](dir, function(err, items) {
   if (err) throw err
+  var commandName = command[0].toUpperCase() + command.slice(1)
+  console.error('%sed %d dependencies', commandName, items.length)
   items.forEach(function(item) {
-    console.log(command, path.relative(process.cwd(), item))
+    console.info('%sed %s', commandName, path.relative(process.cwd(), item))
   })
 })
