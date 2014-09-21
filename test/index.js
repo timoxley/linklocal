@@ -48,7 +48,6 @@ test('can swap local packages for links', function(t) {
 
 test('can unlink local packages', function(t) {
   setup()
-  var PKG_DIR = path.resolve(__dirname, 'bowl')
   linklocal(PKG_DIR, function(err, linked) {
     t.ifError(err)
     t.deepEqual(linked.sort(), LINKS)
@@ -65,7 +64,6 @@ test('can unlink local packages', function(t) {
 
 test('unlink ignores if package not linked', function(t) {
   setup()
-  var PKG_DIR = path.resolve(__dirname, 'bowl')
   linklocal(PKG_DIR, function(err, linked) {
     t.ifError(err)
     t.deepEqual(linked.sort(), LINKS)
