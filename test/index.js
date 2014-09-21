@@ -22,6 +22,13 @@ function setup() {
   rimraf.sync(NODE_MODULES)
 }
 
+test('test is running on npm > 2.0.0', function(t) {
+  exec('npm -v', {cwd: PKG_DIR}, function(err, version) {
+    t.ok(version[0] >= '2')
+    t.end()
+  })
+})
+
 test('can swap local packages for links', function(t) {
   setup()
   exec('npm install', {cwd: PKG_DIR}, function(err) {
