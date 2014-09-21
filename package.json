@@ -1,6 +1,6 @@
 {
   "name": "linklocal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Install local dependencies as symlinks.",
   "main": "index.js",
   "scripts": {
@@ -23,7 +23,7 @@
     "rimraf": "~2.2.8"
   },
   "bin": {
-    "linklocal": "linklocal.js"
+    "linklocal": "bin/linklocal.js"
   },
   "directories": {
     "test": "test"
