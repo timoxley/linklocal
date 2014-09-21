@@ -13,14 +13,14 @@ program
   .usage('[options] <dir>')
 
 program.on('--help', function(){
-  console.log('  Examples:')
-  console.log('')
-  console.log('    $ linklocal')
-  console.log('    $ linklocal --unlink')
-  console.log('')
-  console.log('    $ linklocal mydir')
-  console.log('    $ linklocal --unlink mydir')
-  console.log('')
+  console.info('  Examples:')
+  console.info('')
+  console.info('    $ linklocal')
+  console.info('    $ linklocal --unlink')
+  console.info('')
+  console.info('    $ linklocal mydir')
+  console.info('    $ linklocal --unlink mydir')
+  console.info('')
 })
 
 program.parse(process.argv)
