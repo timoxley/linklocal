@@ -4,34 +4,28 @@ var fs = require('fs')
 var path = require("path")
 var debug = require('debug')('linklocal')
 var once = require('once')
-var findup = require('findup')
 var mkdirp = require('mkdirp')
 var rimraf = require('rimraf')
 
 module.exports = function linklocal(dirname, done) {
   done = once(done)
-  findup(dirname, 'package.json', function(err, root) {
-    if (err) return done(err)
-    var node_modules = path.join(
-      root = path.resolve(root || dirname),
-      'node_modules'
-    )
-    var locals = getLocals(root) || []
-    doLink(locals, node_modules, done)
-  })
+  var node_modules = path.join(
+    path.resolve(dirname),
+    'node_modules'
+  )
+  var locals = getLocals(dirname) || []
+  doLink(locals, node_modules, done)
 }
 module.exports.link = module.exports
+
 module.exports.unlink = function unlinklocal(dirname, done) {
   done = once(done)
-  findup(dirname, 'package.json', function(err, root) {
-    if (err) return done(err)
-    var node_modules = path.join(
-      root = path.resolve(root || dirname),
-      'node_modules'
-    )
-    var locals = getLocals(root) || []
-    doUnlink(locals, node_modules, done)
-  })
+  var node_modules = path.join(
+    path.resolve(dirname),
+    'node_modules'
+  )
+  var locals = getLocals(dirname) || []
+  doUnlink(locals, node_modules, done)
 }
 
 function getLocals(dirname) {
