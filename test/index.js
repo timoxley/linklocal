@@ -37,9 +37,11 @@ test('can swap local packages for links', function(t) {
       t.ifError(err)
       t.deepEqual(linked.sort(), LINKS)
       LINKS.forEach(function(link) {
+        var exists = fs.existsSync(link)
+        t.ok(exists, 'exists')
+        if (!exists) return
         var stat = fs.lstatSync(link)
         t.ok(stat.isSymbolicLink(), 'is symbolic link')
-        t.ok(fs.existsSync(link), 'exists')
       })
       t.end()
     })
@@ -48,13 +50,13 @@ test('can swap local packages for links', function(t) {
 
 test('can unlink local packages', function(t) {
   setup()
-  linklocal(PKG_DIR, function(err, linked) {
+  linklocal(PKG_DIR, function testLinked(err, linked) {
     t.ifError(err)
     t.deepEqual(linked.sort(), LINKS)
-    linklocal.unlink(PKG_DIR, function(err, linked) {
+    linklocal.unlink(PKG_DIR, function testUnlinked(err, unlinked) {
       t.ifError(err)
-      t.deepEqual(linked.sort(), LINKS)
-      LINKS.forEach(function(link) {
+      t.deepEqual(unlinked.sort(), LINKS)
+      LINKS.forEach(function eachLink(link) {
         t.notOk(fs.existsSync(link))
       })
       t.end()

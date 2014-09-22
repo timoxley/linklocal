@@ -4,7 +4,7 @@
   "description": "Install local dependencies as symlinks.",
   "main": "index.js",
   "scripts": {
-    "test": "tape test"
+    "test": "tape test/*.js"
   },
   "engines": {
     "npm": ">=2.0.0"

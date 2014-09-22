@@ -6,29 +6,146 @@ var debug = require('debug')('linklocal')
 var once = require('once')
 var mkdirp = require('mkdirp')
 var rimraf = require('rimraf')
+var assert = require('assert')
 
-module.exports = function linklocal(dirpath, pkgpath, done) {
+var linklocal = module.exports = function linklocal(dirpath, pkgpath, done) {
+  if (arguments.length === 2) {
+    done = pkgpath
+    pkgpath = path.resolve(dirpath, 'package.json')
+    return linklocal(dirpath, pkgpath, done)
+  }
+  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
+  assert.equal(typeof done, 'function', 'done should be a function')
+
   done = once(done)
   var node_modules = path.join(
     path.resolve(dirpath),
     'node_modules'
   )
-  var locals = getLocals(dirpath, pkg) || []
+  var locals = getLocals(dirpath, pkgpath) || []
   doLink(locals, node_modules, done)
 }
+
 module.exports.link = module.exports
 
-module.exports.unlink = function unlinklocal(dirpath, done) {
+module.exports.link.recursive = function linklocalRecursive(dirpath, pkgpath, done) {
+  if (arguments.length === 2) {
+    done = pkgpath
+    pkgpath = path.resolve(dirpath, 'package.json')
+    return linklocal(dirpath, pkgpath, done)
+  }
+  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
+  assert.equal(typeof done, 'function', 'done should be a function')
+
+  done = once(done)
+  var allLinkedDirs = []
+
+  _linklocalRecursive(pkgpath, function(err) {
+    done(err, allLinkedDirs)
+  })
+
+  function _linklocalRecursive(pkgpath, done) {
+    _linklocal(pkgpath, function(err, linkedDirs) {
+      var pending = linkedDirs.length
+      if (err) return done(err)
+      if (!pending) return done(null)
+      linkedDirs.forEach(function(linkedDir) {
+        allLinkedDirs.push(linkedDir)
+        _linklocalRecursive(path.resolve(linkedDir, 'package.json'), function(err) {
+          if (err) return done(err)
+          if (!--pending) return done(null)
+        })
+      })
+    })
+  }
+
+}
+
+function _linklocal(pkgpath, done) {
+  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
+  assert.equal(typeof done, 'function', 'done should be a function')
+  done = once(done)
+  var realPkgPath = fs.realpathSync(path.dirname(pkgpath))
+  linklocal(realPkgPath, pkgpath, function(err, linkedDirs) {
+    if (err) return done(err)
+    done(null, linkedDirs.map(function(dir) {
+      var base = path.relative(realPkgPath, dir)
+      return path.join(path.dirname(pkgpath), base)
+    }))
+  })
+}
+
+module.exports.unlink = function unlinklocal(dirpath, pkgpath, done) {
+  if (arguments.length === 2) {
+    done = pkgpath
+    pkgpath = path.resolve(dirpath, 'package.json')
+    return unlinklocal(dirpath, pkgpath, done)
+  }
+  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
+  assert.equal(typeof done, 'function', 'done should be a function')
+
   done = once(done)
   var node_modules = path.join(
     path.resolve(dirpath),
     'node_modules'
   )
-  var locals = getLocals(dirpath) || []
+  var locals = getLocals(dirpath, pkgpath) || []
   doUnlink(locals, node_modules, done)
 }
 
+module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath, done) {
+  if (arguments.length === 2) {
+    done = pkgpath
+    pkgpath = path.resolve(dirpath, 'package.json')
+    return linklocal(dirpath, pkgpath, done)
+  }
+  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
+  assert.equal(typeof done, 'function', 'done should be a function')
+
+  done = once(done)
+  var allLinkedDirs = []
+  findLinks(pkgpath, fs.realpathSync(pkgpath))
+  var sortedDirs = allLinkedDirs.slice()
+  // sort in valid removal order
+  .sort(function(dirA, dirB) {
+    if (dirA === dirB) return 0
+    if (dirB.indexOf(dirA) === 0) return 1
+    return -1
+  })
+  sortedDirs.forEach(function(dir) {
+    fs.unlinkSync(dir)
+  })
+
+  done(null, allLinkedDirs)
+
+  function findLinks(pkgpath, realPath) {
+    assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
+    done = once(done)
+
+    var pkgDirpath = path.dirname(pkgpath)
+    var realDirpath = fs.realpathSync(path.dirname(realPath))
+    var node_modules = path.join(
+      path.resolve(pkgDirpath),
+      'node_modules'
+    )
+    var linkedDirs = getLocals(realDirpath, pkgpath)
+    linkedDirs.forEach(function(dir) {
+      var pkg = require(path.resolve(dir, 'package.json'))
+      var name = pkg.name
+      var dest = path.join(node_modules, name)
+      allLinkedDirs.push(dest)
+      findLinks(path.resolve(dest, 'package.json'), path.resolve(dir, 'package.json'))
+    })
+  }
+}
+
 function getLocals(dirpath, pkgpath) {
+  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
   var pkg = require(pkgpath)
   var deps = pkg.dependencies || []
   return Object.keys(deps).filter(function(name) {
