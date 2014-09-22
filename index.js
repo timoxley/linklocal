@@ -48,8 +48,9 @@ module.exports.link.recursive = function linklocalRecursive(dirpath, pkgpath, do
 
   function _linklocalRecursive(pkgpath, done) {
     _linklocal(pkgpath, function(err, linkedDirs) {
-      var pending = linkedDirs.length
       if (err) return done(err)
+      linkedDirs = linkedDirs || []
+      var pending = linkedDirs.length
       if (!pending) return done(null)
       linkedDirs.forEach(function(linkedDir) {
         allLinkedDirs.push(linkedDir)
