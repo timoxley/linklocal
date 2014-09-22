@@ -154,7 +154,7 @@ function getLocals(dirpath, pkgpath) {
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
   assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
   var pkg = JSON.parse(fs.readFileSync(pkgpath))
-  var deps = pkg.dependencies || []
+  var deps = getDependencies(pkg)
   return Object.keys(deps).filter(function(name) {
     var val = deps[name]
     return isLocal(val)
@@ -163,6 +163,15 @@ function getLocals(dirpath, pkgpath) {
     pkgPath = pkgPath.replace(/^file:/g, '')
     return path.resolve(dirpath, pkgPath)
   })
+}
+
+function getDependencies(pkg) {
+  var deps = pkg.dependencies || {}
+  var devDependencies = pkg.devDependencies || {}
+  for (var name in devDependencies) {
+    deps[name] = devDependencies[name]
+  }
+  return deps
 }
 
 function isLocal(val) {

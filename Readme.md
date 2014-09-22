@@ -3,6 +3,7 @@
 ### Create symlinks to local dependencies in your package.json.
 
 Requires npm 2.0.0 and above.
+Links both development and production dependencies.
 
 ## Installation
 
