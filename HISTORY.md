@@ -1,3 +1,8 @@
+2.0.0 / 2014-09-22
+==================
+
+Link production and development dependencies.
+
 1.1.2 / 2014-09-22
 ==================
 
