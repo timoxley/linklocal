@@ -16,11 +16,14 @@ program
 program.on('--help', function(){
   console.info('  Examples:')
   console.info('')
-  console.info('    $ linklocal')
-  console.info('    $ linklocal --unlink')
+  console.info('$ linklocal                 # link local deps in current dir')
+  console.info('$ linklocal -r              # link local deps recursively')
+  console.info('$ linklocal unlink          # unlink only in current dir')
+  console.info('$ linklocal unlink -r       # unlink recursively')
   console.info('')
-  console.info('    $ linklocal mydir')
-  console.info('    $ linklocal --unlink mydir')
+  console.info('$ linklocal -- mydir        # link local deps in mydir')
+  console.info('$ linklocal unlink -- mydir # unlink local deps in mydir')
+
   console.info('')
 })
 

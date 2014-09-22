@@ -17,18 +17,21 @@ npm install -g linklocal
 
   Options:
 
-    -h, --help     output usage information
-    -V, --version  output the version number
-    -u, --unlink   Unlink local dependencies
-    -l, --link     Link local dependencies [default]
+    -h, --help      output usage information
+    -V, --version   output the version number
+    -u, --unlink    Unlink local dependencies
+    -l, --link      Link local dependencies [default]
+    -r, --recursive Link recursively [probably what you want]
 
   Examples:
 
-    $ linklocal
-    $ linklocal --unlink
+    $ linklocal # link local deps in current dir
+    $ linklocal -r # link local deps recursively
+    $ linklocal unlink # unlink only in current dir
+    $ linklocal unlink -r # unlink recursively
 
-    $ linklocal mydir
-    $ linklocal --unlink mydir
+    $ linklocal -- mydir # link local deps in mydir
+    $ linklocal unlink -- mydir # unlink local deps in mydir
 ```
 
 ### Linking
@@ -36,11 +39,13 @@ npm install -g linklocal
 `linklocal` creates symlinks to any local dependencies it finds in your package.json.
 
 ```
+# from test/banana
 > linklocal
-link node_modules/apple
+Linked 1 dependencies
+Linked node_modules/apple
 > ls -l node_modules
 total 8
-lrwxr-xr-x  1 timoxley  staff  11 20 Sep 01:39 apple -> ../apple
+lrwxr-xr-x  1 timoxley  staff  11 20 Sep 01:39 apple -> ../../apple
 ```
 
 ## Unlinking
@@ -48,13 +53,45 @@ lrwxr-xr-x  1 timoxley  staff  11 20 Sep 01:39 apple -> ../apple
 You can unlink all local links using `linklocal --unlink`.
 
 ```
+# from test/banana
 > linklocal --unlink
-unlink node_modules/apple
+Unlinked 1 dependencies
+Unlinked node_modules/apple
 > ls -l node_modules
 
 >
 ```
 
+### Recursively Linking local dependencies in local dependencies
+
+If your local dependencies might have local dependencies, you can use
+`linklocal -r` to recursively link all local dependencies:
+
+#### Without Recursion
+
+`banana` depends on `apple`
+`apple` does not get linked
+
+```
+# from test/bowl
+> linklocal
+Linked 3 dependencies
+Linked node_modules/@nuts/almond
+Linked node_modules/banana
+Linked node_modules/apple
+```
+#### With Recursion
+
+`apple` gets linked
+```
+# from test/bowl
+> linklocal -r
+Linked 4 dependencies
+Linked node_modules/@nuts/almond
+Linked node_modules/apple
+Linked node_modules/banana
+Linked node_modules/banana/node_modules/apple
+```
 
 ## Why
 
