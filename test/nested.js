@@ -74,3 +74,42 @@ test('can unlink nested', function(t) {
     })
   })
 })
+
+test('can link no dependencies', function(t) {
+  setup()
+  var PKG_PATH = path.resolve(__dirname, 'empty', 'package.json')
+  var PKG_DIR = path.dirname(PKG_PATH)
+  linklocal.recursive(PKG_DIR, PKG_PATH, function(err, linked) {
+    t.ifError(err)
+    t.ok(linked)
+    var expectedLinks = bowlModules.concat(bowl)
+    t.deepEqual(linked, [])
+    t.end()
+  })
+})
+
+test('unlink can handle zero dependencies', function(t) {
+  setup()
+  var PKG_PATH = path.resolve(__dirname, 'empty', 'package.json')
+  var PKG_DIR = path.dirname(PKG_PATH)
+
+  linklocal.unlink.recursive(PKG_DIR, PKG_PATH, function(err, unlinked) {
+    t.ifError(err)
+    t.ok(unlinked)
+    t.deepEqual(unlinked, [])
+    t.end()
+  })
+})
+
+test('unlink can handle not linked', function(t) {
+  setup()
+  var PKG_PATH = path.resolve(__dirname, 'salad', 'package.json')
+  var PKG_DIR = path.dirname(PKG_PATH)
+
+  linklocal.unlink.recursive(PKG_DIR, PKG_PATH, function(err, unlinked) {
+    t.ifError(err)
+    t.ok(unlinked)
+    t.deepEqual(unlinked, [])
+    t.end()
+  })
+})

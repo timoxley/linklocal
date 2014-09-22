@@ -109,7 +109,7 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
   done = once(done)
   var allLinkedDirs = []
   findLinks(pkgpath, fs.realpathSync(pkgpath))
-  var sortedDirs = allLinkedDirs.slice()
+  var sortedDirs = allLinkedDirs
   // sort in valid removal order
   .sort(function(dirA, dirB) {
     if (dirA === dirB) return 0
@@ -132,13 +132,19 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
       path.resolve(pkgDirpath),
       'node_modules'
     )
+
     var linkedDirs = getLocals(realDirpath, pkgpath)
-    linkedDirs.forEach(function(dir) {
-      var pkg = require(path.resolve(dir, 'package.json'))
+    .filter(function(dir) {
+      return fs.existsSync(dir)
+    }).map(function(dir) {
+      var pkg = JSON.parse(fs.readFileSync(path.resolve(dir, 'package.json')))
       var name = pkg.name
-      var dest = path.join(node_modules, name)
-      allLinkedDirs.push(dest)
-      findLinks(path.resolve(dest, 'package.json'), path.resolve(dir, 'package.json'))
+      return path.join(node_modules, name)
+    }).filter(function(dir) {
+      return fs.existsSync(dir)
+    }).forEach(function(dir) {
+      allLinkedDirs.push(dir)
+      findLinks(path.resolve(dir, 'package.json'), path.resolve(dir, 'package.json'))
     })
   }
 }
@@ -146,7 +152,7 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
 function getLocals(dirpath, pkgpath) {
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
   assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
-  var pkg = require(pkgpath)
+  var pkg = JSON.parse(fs.readFileSync(pkgpath))
   var deps = pkg.dependencies || []
   return Object.keys(deps).filter(function(name) {
     var val = deps[name]
