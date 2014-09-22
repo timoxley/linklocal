@@ -30,8 +30,9 @@ var command = program.unlink ? 'unlink' : 'link'
 program.args[0] = program.args[0] || ''
 
 var dir = path.resolve(process.cwd(), program.args[0]) || process.cwd()
+var pkg = path.resolve(dir, 'package.json')
 
-linklocal[command](dir, function(err, items) {
+linklocal[command](dir, pkg, function(err, items) {
   if (err) throw err
   var commandName = command[0].toUpperCase() + command.slice(1)
   console.error('%sed %d dependencies', commandName, items.length)

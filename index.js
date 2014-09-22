@@ -7,29 +7,29 @@ var once = require('once')
 var mkdirp = require('mkdirp')
 var rimraf = require('rimraf')
 
-module.exports = function linklocal(dirname, done) {
+module.exports = function linklocal(dirpath, pkgpath, done) {
   done = once(done)
   var node_modules = path.join(
-    path.resolve(dirname),
+    path.resolve(dirpath),
     'node_modules'
   )
-  var locals = getLocals(dirname) || []
+  var locals = getLocals(dirpath, pkg) || []
   doLink(locals, node_modules, done)
 }
 module.exports.link = module.exports
 
-module.exports.unlink = function unlinklocal(dirname, done) {
+module.exports.unlink = function unlinklocal(dirpath, done) {
   done = once(done)
   var node_modules = path.join(
-    path.resolve(dirname),
+    path.resolve(dirpath),
     'node_modules'
   )
-  var locals = getLocals(dirname) || []
+  var locals = getLocals(dirpath) || []
   doUnlink(locals, node_modules, done)
 }
 
-function getLocals(dirname) {
-  var pkg = require(path.join(dirname, 'package.json'))
+function getLocals(dirpath, pkgpath) {
+  var pkg = require(pkgpath)
   var deps = pkg.dependencies || []
   return Object.keys(deps).filter(function(name) {
     var val = deps[name]
@@ -37,10 +37,9 @@ function getLocals(dirname) {
   }).map(function(name) {
     var pkgPath = deps[name]
     pkgPath = pkgPath.replace(/^file:/g, '')
-    return path.resolve(dirname, pkgPath)
+    return path.resolve(dirpath, pkgPath)
   })
 }
-
 
 function isLocal(val) {
   return (
