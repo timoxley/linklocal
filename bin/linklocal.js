@@ -43,7 +43,7 @@ if (recursive) fn = fn.recursive
 fn(dir, pkg, function(err, items) {
   if (err) throw err
   var commandName = command[0].toUpperCase() + command.slice(1)
-  console.error('%sed %d dependencies', commandName, items.length)
+  console.error('%sed %d dependenc' + (1 == items.length ? 'y' : 'ies'), commandName, items.length)
   items.forEach(function(item) {
     console.info('%sed %s', commandName, path.relative(process.cwd(), item))
   })
