@@ -128,7 +128,11 @@ All local dependencies should have a `@scope`.
 `linklocal` does not install dependencies of linked dependencies. To have them installed, use [hughsk/scoped-bulk](https://github.com/hughsk/scoped-bulk) in a script like:
 ```json
 {
-  "prepublish": "scoped-bulk my-scope npm install"
+  "name": "my-app"
+  "scripts": {
+    "dev": "linklocal -r && scoped-bulk myscope npm install --production",
+    "prepublish": "if [[ $NODE_ENV != 'production' ]]; then npm run dev; fi"
+  }
 }
 ```
 
