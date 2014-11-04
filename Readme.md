@@ -14,7 +14,7 @@ npm install -g linklocal
 ## Recommendations
 
 All local dependencies should have a `@scope`.
-`linklocal` does not install dependencies of linked dependencies. To have them installed, use `scoped-bulk` in a script like:
+`linklocal` does not install dependencies of linked dependencies. To have them installed, use [hughsk/scoped-bulk](https://github.com/hughsk/scoped-bulk) in a script like:
 ```json
 {
   "prepublish": "scoped-bulk my-scope npm install"
