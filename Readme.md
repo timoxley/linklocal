@@ -11,16 +11,6 @@ Links both development and production dependencies.
 npm install -g linklocal
 ```
 
-## Recommendations
-
-All local dependencies should have a `@scope`.
-`linklocal` does not install dependencies of linked dependencies. To have them installed, use [hughsk/scoped-bulk](https://github.com/hughsk/scoped-bulk) in a script like:
-```json
-{
-  "prepublish": "scoped-bulk my-scope npm install"
-}
-```
-
 ## Usage
 
 ```
@@ -132,10 +122,19 @@ changes can be instantly consumed by dependees, effects
 are limited to the current package and you can be more
 certain local dependees are using the latest changes.
 
+## Recommendations
+
+All local dependencies should have a `@scope`.
+`linklocal` does not install dependencies of linked dependencies. To have them installed, use [hughsk/scoped-bulk](https://github.com/hughsk/scoped-bulk) in a script like:
+```json
+{
+  "prepublish": "scoped-bulk my-scope npm install"
+}
+```
 
 ## Caveats
 
-* `linklocal` does not install dependencies of linked dependencies.
+* `linklocal` does not install dependencies of linked dependencies, as such you typically end up installing dependencies of linked dependencies twice: once during npm install, then again after linklocal
 
 ## See Also
 
