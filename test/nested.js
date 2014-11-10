@@ -11,18 +11,26 @@ var linklocal = require("../")
 
 var salad = path.resolve(__dirname, 'salad')
 var saladModulesPath = path.resolve(salad, 'node_modules')
-var bowl = path.resolve(saladModulesPath, 'bowl')
+var bowl = path.resolve(__dirname, 'bowl')
 var bowlModulesPath = path.resolve(bowl, 'node_modules')
+var banana = path.resolve(__dirname, 'banana')
+var apple = path.resolve(__dirname, 'apple')
+var almond = path.resolve(__dirname, 'almond')
 
 var bowlModules = [
+  path.resolve(saladModulesPath, 'bowl'),
   path.resolve(bowlModulesPath, '@nuts', 'almond'),
   path.resolve(bowlModulesPath, 'apple'),
   path.resolve(bowlModulesPath, 'banana'),
-  path.resolve(bowlModulesPath, 'banana', 'node_modules', 'apple')
-].sort()
+  path.resolve(banana, 'node_modules', 'apple')
+]
 
 function setup() {
-  rimraf.sync(saladModulesPath)
+  rimraf.sync(path.resolve(salad, 'node_modules'))
+  rimraf.sync(path.resolve(bowl, 'node_modules'))
+  rimraf.sync(path.resolve(apple, 'node_modules'))
+  rimraf.sync(path.resolve(banana, 'node_modules'))
+  rimraf.sync(path.resolve(almond, 'node_modules'))
 }
 
 test('can link nested', function(t) {
@@ -33,11 +41,11 @@ test('can link nested', function(t) {
     t.ifError(err)
     t.ok(linked)
 
-    var expectedLinks = bowlModules.concat(bowl)
+    var expectedLinks = bowlModules//.concat(bowl)
 
     t.deepEqual(linked.sort(), expectedLinks.sort())
 
-    var stat = fs.lstatSync(bowl)
+    var stat = fs.lstatSync(path.resolve(saladModulesPath, 'bowl'))
     t.ok(stat.isSymbolicLink(), 'bowl is symbolic link')
     t.ok(fs.existsSync(bowl), 'bowl exists')
 
@@ -55,7 +63,7 @@ test('can unlink nested', function(t) {
   var PKG_PATH = path.resolve(__dirname, 'salad', 'package.json')
   var PKG_DIR = path.dirname(PKG_PATH)
 
-  var expectedLinks = bowlModules.concat(bowl)
+  var expectedLinks = bowlModules
 
   linklocal.link.recursive(PKG_DIR, PKG_PATH, function(err, linked) {
     t.ifError(err)
@@ -65,7 +73,7 @@ test('can unlink nested', function(t) {
       t.ifError(err)
       t.ok(unlinked)
       t.deepEqual(unlinked.sort(), expectedLinks.sort())
-      t.notOk(fs.existsSync(bowl), 'bowl does not exist')
+      t.notOk(fs.existsSync(path.join(saladModulesPath, bowl)), 'bowl does not exist')
 
       bowlModules.forEach(function(bowlModule) {
         t.notOk(fs.existsSync(bowlModule), 'exists')
@@ -82,7 +90,7 @@ test('can link no dependencies', function(t) {
   linklocal.recursive(PKG_DIR, PKG_PATH, function(err, linked) {
     t.ifError(err)
     t.ok(linked)
-    var expectedLinks = bowlModules.concat(bowl)
+    var expectedLinks = bowlModules
     t.deepEqual(linked, [])
     t.end()
   })

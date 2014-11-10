@@ -1,0 +1,9 @@
+{
+  "name": "circular-a",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "circular-b": "file:../circular-b"
+  }
+}
+

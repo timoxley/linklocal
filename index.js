@@ -33,7 +33,7 @@ module.exports.link.recursive = function linklocalRecursive(dirpath, pkgpath, do
   if (arguments.length === 2) {
     done = pkgpath
     pkgpath = path.resolve(dirpath, 'package.json')
-    return linklocal(dirpath, pkgpath, done)
+    return linklocal.recursive(dirpath, pkgpath, done)
   }
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
   assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
@@ -71,10 +71,7 @@ function _linklocal(pkgpath, done) {
   var realPkgPath = fs.realpathSync(path.dirname(pkgpath))
   linklocal(realPkgPath, pkgpath, function(err, linkedDirs) {
     if (err) return done(err)
-    done(null, linkedDirs.map(function(dir) {
-      var base = path.relative(realPkgPath, dir)
-      return path.join(path.dirname(pkgpath), base)
-    }))
+    done(null, linkedDirs)
   })
 }
 
@@ -101,15 +98,17 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
   if (arguments.length === 2) {
     done = pkgpath
     pkgpath = path.resolve(dirpath, 'package.json')
-    return linklocal(dirpath, pkgpath, done)
+    return linklocal.unlink.recursive(dirpath, pkgpath, done)
   }
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
   assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
   assert.equal(typeof done, 'function', 'done should be a function')
 
   done = once(done)
-  var allLinkedDirs = []
-  findLinks(pkgpath, fs.realpathSync(pkgpath))
+  var allLinkedDirs = findLinks(pkgpath, fs.realpathSync(pkgpath))
+  .map(function(link) {
+    return path.join(fs.realpathSync(path.dirname(link)), path.basename(link))
+  })
   var sortedDirs = allLinkedDirs
   // sort in valid removal order
   .sort(function(dirA, dirB) {
@@ -124,6 +123,7 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
   done(null, allLinkedDirs)
 
   function findLinks(pkgpath, realPath) {
+    var links = []
     assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
     done = once(done)
 
@@ -144,9 +144,10 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
     }).filter(function(dir) {
       return fs.existsSync(dir)
     }).forEach(function(dir) {
-      allLinkedDirs.push(dir)
-      findLinks(path.resolve(dir, 'package.json'), path.resolve(dir, 'package.json'))
+      links.push(dir)
+      links = links.concat(findLinks(path.resolve(dir, 'package.json'), path.resolve(dir, 'package.json')))
     })
+    return links
   }
 }
 
@@ -188,32 +189,48 @@ function doLink(packages, node_modules, done) {
   var dests = []
   if (!packages.length) return done(null, [])
   packages.forEach(function(dir) {
-    var pkg = require(path.resolve(dir, 'package.json'))
-    var name = pkg.name
-    var dest = path.join(node_modules, name)
-    var rel  = path.relative(path.dirname(dest), dir)
-    mkdirp(path.dirname(dest), function(err) {
-      if (err && err.code !== 'EEXISTS') return done(err)
-      fs.lstat(dest, function(err, stat) {
-        if (err && err.code === 'ENOENT') return link()
-        if (err) return done(err)
-        if (!stat.isSymbolicLink()) return rimraf(dest, link)
-
-        fs.unlink(dest, link)
+    fs.realpath(dir, function(err, dir) {
+      if (err) return done(err)
+      var pkg = require(path.resolve(dir, 'package.json'))
+      var name = pkg.name
+      var dest = path.join(node_modules, name)
+      var rel = path.relative(path.dirname(dest), dir)
+      mkdirp(path.dirname(dest), function(err) {
+        if (err && err.code !== 'EEXISTS') return done(err)
+        fs.realpath(dest, function(err, realPath) {
+          if (err && err.code !== 'ENOENT') return done(err)
+          if (realPath && dest !== realPath) {
+            rel = path.relative(dest, dir)
+            if (realPath === dir) return skip()
+          }
+          fs.lstat(dest, function(err, stat) {
+            if (err && err.code === 'ENOENT') return link()
+            if (err) return done(err)
+            if (!stat.isSymbolicLink()) return rimraf(dest, link)
+            fs.unlink(dest, link)
+          })
+        })
       })
+
+      function link(err) {
+        if (err) return done(err)
+        fs.symlink(rel, dest, 'junction', bump)
+      }
+
+      function bump(err) {
+        if (err) return done(err)
+        fs.realpath(path.dirname(dest), function(err, realPath) {
+          dests.push(dest)
+          debug('Linked ' + name + ' into ./' + path.relative(process.cwd(), dest))
+          if (!--pending) return done(null, dests)
+        })
+      }
+
+      function skip(err) {
+        if (err) return done(err)
+        if (!--pending) return done(null, dests)
+      }
     })
-
-    function link(err) {
-      if (err) return done(err)
-      fs.symlink(rel, dest, 'junction', bump)
-    }
-
-    function bump(err) {
-      if (err) return done(err)
-      dests.push(dest)
-      debug('Linked ' + name + ' into ./' + path.relative(process.cwd(), dest))
-      if (!--pending) return done(null, dests)
-    }
   })
 }
 
@@ -223,24 +240,30 @@ function doUnlink(packages, node_modules, done) {
   var dests = []
   if (!packages.length) return done(null, [])
   packages.forEach(function(dir) {
-    var pkg = require(path.resolve(dir, 'package.json'))
-    var name = pkg.name
-    var dest = path.join(node_modules, name)
-    var rel  = path.relative(node_modules, dir)
-    fs.lstat(dest, function(err, stat) {
-      if (err && err.code === 'ENOENT') return bump()
+    fs.realpath(dir, function(err, dir) {
       if (err) return done(err)
-      if (!stat || !stat.isSymbolicLink()) return bump()
-      fs.unlink(dest, function(err) {
+      var pkg = require(path.resolve(dir, 'package.json'))
+      var name = pkg.name
+      var dest = path.join(node_modules, name)
+      fs.lstat(dest, function(err, stat) {
+        if (err && err.code === 'ENOENT') return bump()
         if (err) return done(err)
-        debug('Unlinked ' + name + ' from ./' + path.relative(process.cwd(), dest))
-        dests.push(dest)
-        bump()
+        if (!stat || !stat.isSymbolicLink()) return bump()
+        fs.unlink(dest, function(err) {
+          if (err) return done(err)
+          fs.realpath(path.dirname(dest), function(err, realPath) {
+            if (err) return done(err)
+            dest = path.join(realPath, path.basename(dest))
+            dests.push(dest)
+            debug('Unlinked ' + name + ' from ./' + path.relative(process.cwd(), dest))
+            bump()
+          })
+        })
       })
-    })
 
-    function bump() {
-      if (!--pending) return done(null, dests)
-    }
+      function bump() {
+        if (!--pending) return done(null, dests)
+      }
+    })
   })
 }
