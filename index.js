@@ -123,6 +123,9 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
       if (dirB.indexOf(dirA) === 0) return 1
       return -1
     })
+    .filter(function(item) {
+      return fs.lstatSync(item).isSymbolicLink()
+    })
     links.forEach(function(dir) {
       fs.unlinkSync(dir)
     })
