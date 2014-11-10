@@ -23,8 +23,10 @@ var linklocal = module.exports = function linklocal(dirpath, pkgpath, done) {
     path.resolve(dirpath),
     'node_modules'
   )
-  var locals = getLocals(dirpath, pkgpath) || []
-  doLink(locals, node_modules, done)
+  getLocals(dirpath, pkgpath, function(err, locals) {
+    if (err) return done(err)
+    doLink(locals, node_modules, done)
+  })
 }
 
 module.exports.link = module.exports
@@ -90,8 +92,11 @@ module.exports.unlink = function unlinklocal(dirpath, pkgpath, done) {
     path.resolve(dirpath),
     'node_modules'
   )
-  var locals = getLocals(dirpath, pkgpath) || []
-  doUnlink(locals, node_modules, done)
+
+  getLocals(dirpath, pkgpath, function(err, locals) {
+    if (err) return done(err)
+    doUnlink(locals, node_modules, done)
+  })
 }
 
 module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath, done) {
@@ -105,25 +110,27 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
   assert.equal(typeof done, 'function', 'done should be a function')
 
   done = once(done)
-  var allLinkedDirs = findLinks(pkgpath, fs.realpathSync(pkgpath))
-  .map(function(link) {
-    return path.join(fs.realpathSync(path.dirname(link)), path.basename(link))
-  })
-  var sortedDirs = allLinkedDirs
-  // sort in valid removal order
-  .sort(function(dirA, dirB) {
-    if (dirA === dirB) return 0
-    if (dirB.indexOf(dirA) === 0) return 1
-    return -1
-  })
-  sortedDirs.forEach(function(dir) {
-    fs.unlinkSync(dir)
+  findLinks(pkgpath, fs.realpathSync(pkgpath), function(err, links) {
+    if (err) return done(err)
+    links = links.map(function(link) {
+      return path.join(fs.realpathSync(path.dirname(link)), path.basename(link))
+    })
+    .filter(function(item, index, arr) {
+      return arr.indexOf(item) === index
+    })
+    .sort(function(dirA, dirB) {
+      if (dirA === dirB) return 0
+      if (dirB.indexOf(dirA) === 0) return 1
+      return -1
+    })
+    links.forEach(function(dir) {
+      fs.unlinkSync(dir)
+    })
+
+    done(null, links)
   })
 
-  done(null, allLinkedDirs)
-
-  function findLinks(pkgpath, realPath) {
-    var links = []
+  function findLinks(pkgpath, realPath, done) {
     assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
     done = once(done)
 
@@ -134,35 +141,50 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
       'node_modules'
     )
 
-    var linkedDirs = getLocals(realDirpath, pkgpath)
-    .filter(function(dir) {
-      return fs.existsSync(dir)
-    }).map(function(dir) {
-      var pkg = JSON.parse(fs.readFileSync(path.resolve(dir, 'package.json')))
-      var name = pkg.name
-      return path.join(node_modules, name)
-    }).filter(function(dir) {
-      return fs.existsSync(dir)
-    }).forEach(function(dir) {
-      links.push(dir)
-      links = links.concat(findLinks(path.resolve(dir, 'package.json'), path.resolve(dir, 'package.json')))
+    var links = []
+    getLocals(realDirpath, pkgpath, function(err, locals) {
+      if (err) return done(err)
+      var pending = 0
+      var links = locals.filter(function(dir) {
+        return fs.existsSync(dir)
+      }).map(function(dir) {
+        var pkg = JSON.parse(fs.readFileSync(path.resolve(dir, 'package.json')))
+        var name = pkg.name
+        return path.join(node_modules, name)
+      }).filter(function(dir) {
+        return fs.existsSync(dir)
+      })
+      if (!links.length) return done(null, links)
+      links.forEach(function(dir) {
+        links.push(dir)
+        pending++
+        findLinks(path.resolve(dir, 'package.json'), path.resolve(dir, 'package.json'), function(err, subLinks) {
+          if (err) return done(err)
+          links = links.concat(subLinks)
+          if (!--pending) return done(null, links)
+        })
+      })
     })
-    return links
   }
 }
 
-function getLocals(dirpath, pkgpath) {
-  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
-  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
-  var pkg = JSON.parse(fs.readFileSync(pkgpath))
-  var deps = getDependencies(pkg)
-  return Object.keys(deps).filter(function(name) {
-    var val = deps[name]
-    return isLocal(val)
-  }).map(function(name) {
-    var pkgPath = deps[name]
-    pkgPath = pkgPath.replace(/^file:/g, '')
-    return path.resolve(dirpath, pkgPath)
+function getLocals(dirpath, pkgpath, done) {
+  fs.realpath(dirpath, function(err, dirpath) {
+    if (err) return done(err)
+    assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+    assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
+    var pkg = JSON.parse(fs.readFileSync(pkgpath))
+    var deps = getDependencies(pkg)
+    var locals = Object.keys(deps).filter(function(name) {
+      var val = deps[name]
+      return isLocal(val)
+    }).map(function(name) {
+      var pkgPath = deps[name]
+      pkgPath = pkgPath.replace(/^file:/g, '')
+      return path.resolve(dirpath, pkgPath)
+    })
+
+    done(null, locals)
   })
 }
 
