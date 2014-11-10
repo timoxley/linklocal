@@ -68,7 +68,6 @@ test('can unlink nested', function(t) {
   linklocal.link.recursive(PKG_DIR, PKG_PATH, function(err, linked) {
     t.ifError(err)
     t.deepEqual(linked.sort(), expectedLinks.sort())
-
     linklocal.unlink.recursive(PKG_DIR, PKG_PATH, function(err, unlinked) {
       t.ifError(err)
       t.ok(unlinked)
