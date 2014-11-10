@@ -33,12 +33,76 @@ function setup() {
   rimraf.sync(path.resolve(PKG_C, 'node_modules'))
 }
 
-test('circular dependencies recursive no parent', function(t) {
+test('link circular dependencies recursive', function(t) {
   setup()
   linklocal.link.recursive(PKG_A, function(err, linked) {
     t.ifError(err)
     var expected = LINKS.slice()
     t.deepEqual(linked, expected)
     t.end()
+  })
+})
+
+test('link circular dependencies recursive after install', function(t) {
+  setup()
+  exec('npm install', {cwd: PKG_A}, function() {
+    t.ifError(err)
+    linklocal.link.recursive(PKG_A, function(err, linked) {
+      t.ifError(err)
+      var expected = LINKS.slice()
+      t.deepEqual(linked, expected)
+      t.end()
+    })
+  })
+})
+
+
+test('link circular dependencies non-recursive', function(t) {
+  setup()
+  linklocal.link(PKG_A, function(err, linked) {
+    t.ifError(err)
+    t.deepEqual(linked, [A_TO_B])
+    t.end()
+  })
+})
+
+test('unlink circular dependencies recursive', function(t) {
+  setup()
+  linklocal.link.recursive(PKG_A, function(err, linked) {
+    t.ifError(err)
+    linklocal.unlink.recursive(PKG_A, function(err, linked) {
+      t.ifError(err)
+      var expected = LINKS.slice()
+      t.deepEqual(linked, expected)
+      t.end()
+    })
+  })
+})
+
+test('unlink circular dependencies recursive after install', function(t) {
+  setup()
+  exec('npm install', {cwd: PKG_A}, function() {
+    t.ifError(err)
+    linklocal.link.recursive(PKG_A, function(err, linked) {
+      t.ifError(err)
+      linklocal.unlink.recursive(PKG_A, function(err, linked) {
+        t.ifError(err)
+        var expected = LINKS.slice()
+        t.deepEqual(linked, expected)
+        t.end()
+      })
+    })
+  })
+})
+
+test('unlink circular dependencies non-recursive', function(t) {
+  setup()
+  linklocal.link.recursive(PKG_A, function(err, linked) {
+    t.ifError(err)
+    linklocal.unlink(PKG_A, function(err, linked) {
+      t.ifError(err)
+      t.deepEqual(linked, [A_TO_B])
+      t.end()
+    })
   })
 })

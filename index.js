@@ -174,20 +174,22 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
 function getLocals(dirpath, pkgpath, done) {
   fs.realpath(dirpath, function(err, dirpath) {
     if (err) return done(err)
-    assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
-    assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
-    var pkg = JSON.parse(fs.readFileSync(pkgpath))
-    var deps = getDependencies(pkg)
-    var locals = Object.keys(deps).filter(function(name) {
-      var val = deps[name]
-      return isLocal(val)
-    }).map(function(name) {
-      var pkgPath = deps[name]
-      pkgPath = pkgPath.replace(/^file:/g, '')
-      return path.resolve(dirpath, pkgPath)
+    fs.realpath(pkgpath, function(err, pkgpath) {
+      if (err) return done(err)
+      assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+      assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
+      var pkg = JSON.parse(fs.readFileSync(pkgpath))
+      var deps = getDependencies(pkg)
+      var locals = Object.keys(deps).filter(function(name) {
+        var val = deps[name]
+        return isLocal(val)
+      }).map(function(name) {
+        var pkgPath = deps[name]
+        pkgPath = pkgPath.replace(/^file:/g, '')
+        return path.resolve(dirpath, pkgPath)
+      })
+      done(null, locals)
     })
-
-    done(null, locals)
   })
 }
 
