@@ -1,6 +1,6 @@
 {
   "name": "linklocal",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "Install local dependencies as symlinks.",
   "main": "index.js",
   "scripts": {
