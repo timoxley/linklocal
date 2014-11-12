@@ -25,6 +25,13 @@ program.on('--help', function(){
   console.info('$ linklocal -- mydir        # link local deps in mydir')
   console.info('$ linklocal unlink -- mydir # unlink local deps in mydir')
 
+  console.info('Formats')
+  console.info('%s:', 'relative path to symlink')
+  console.info('%S:', 'absolute path to symlink')
+  console.info('%h:', 'relative real path to symlink target')
+  console.info('%H:', 'absolute real path to symlink target')
+  console.info('')
+  console.info('relative paths are relative to cwd')
   console.info('')
 })
 
