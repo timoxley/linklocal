@@ -41,9 +41,9 @@ test('can link nested', function(t) {
     t.ifError(err)
     t.ok(linked)
 
-    var expectedLinks = bowlModules//.concat(bowl)
+    var expectedLinks = bowlModules
 
-    t.deepEqual(linked.sort(), expectedLinks.sort())
+    t.deepEqual(linked.map(getLink).sort(), expectedLinks.sort())
 
     var stat = fs.lstatSync(path.resolve(saladModulesPath, 'bowl'))
     t.ok(stat.isSymbolicLink(), 'bowl is symbolic link')
@@ -67,11 +67,11 @@ test('can unlink nested', function(t) {
 
   linklocal.link.recursive(PKG_DIR, PKG_PATH, function(err, linked) {
     t.ifError(err)
-    t.deepEqual(linked.sort(), expectedLinks.sort())
+    t.deepEqual(linked.map(getLink).sort(), expectedLinks.sort())
     linklocal.unlink.recursive(PKG_DIR, PKG_PATH, function(err, unlinked) {
       t.ifError(err)
       t.ok(unlinked)
-      t.deepEqual(unlinked.sort(), expectedLinks.sort())
+      t.deepEqual(unlinked.map(getLink).sort(), expectedLinks.sort())
       t.notOk(fs.existsSync(path.join(saladModulesPath, bowl)), 'bowl does not exist')
 
       bowlModules.forEach(function(bowlModule) {
@@ -120,3 +120,7 @@ test('unlink can handle not linked', function(t) {
     t.end()
   })
 })
+
+function getLink(item) {
+  return item.link
+}

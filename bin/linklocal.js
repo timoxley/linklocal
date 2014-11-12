@@ -11,6 +11,7 @@ program
   // ignore --link only for api balancing with unlink
   .option('-l, --link', 'Link local dependencies [default]')
   .option('-r, --recursive', 'Link recursively')
+  .option('-f, --format [format]', 'output format', String, '%s -> %h')
   .usage('[options] <dir>')
 
 program.on('--help', function(){
@@ -40,11 +41,27 @@ var recursive = !!program.recursive
 fn = linklocal[command]
 if (recursive) fn = fn.recursive
 
+var format = program.format
+
 fn(dir, pkg, function(err, items) {
   if (err) throw err
+  items = items || []
   var commandName = command[0].toUpperCase() + command.slice(1)
-  console.error('%sed %d dependenc' + (1 == items.length ? 'y' : 'ies'), commandName, items.length)
   items.forEach(function(item) {
-    console.info('%sed %s', commandName, path.relative(process.cwd(), item))
+    console.log('%s', formatOut(item, format))
   })
+  console.error('\n%sed %d dependenc' + (1 == items.length ? 'y' : 'ies'), commandName, items.length)
 })
+
+var formats = {
+  '%s': 'link',
+  '%h': 'src'
+}
+
+function formatOut(input, format) {
+  var output = format
+  for (var key in formats) {
+    output = output.replace(new RegExp(key, 'gm'), input[formats[key]])
+  }
+  return output
+}

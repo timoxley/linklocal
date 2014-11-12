@@ -7,6 +7,7 @@ var once = require('once')
 var mkdirp = require('mkdirp')
 var rimraf = require('rimraf')
 var assert = require('assert')
+var map = require('map-limit')
 
 var linklocal = module.exports = function linklocal(dirpath, pkgpath, done) {
   if (arguments.length === 2) {
@@ -44,26 +45,25 @@ module.exports.link.recursive = function linklocalRecursive(dirpath, pkgpath, do
   done = once(done)
   var allLinkedDirs = []
 
-  _linklocalRecursive(pkgpath, function(err) {
-    done(err, allLinkedDirs)
-  })
+  _linklocalRecursive(pkgpath, done)
 
   function _linklocalRecursive(pkgpath, done) {
     _linklocal(pkgpath, function(err, linkedDirs) {
       if (err) return done(err)
       linkedDirs = linkedDirs || []
-      var pending = linkedDirs.length
-      if (!pending) return done(null)
-      linkedDirs.forEach(function(linkedDir) {
-        allLinkedDirs.push(linkedDir)
-        _linklocalRecursive(path.resolve(linkedDir, 'package.json'), function(err) {
-          if (err) return done(err)
-          if (!--pending) return done(null)
+      map(linkedDirs, 1, function(link, next) {
+        _linklocalRecursive(path.resolve(link.src, 'package.json'), function(err, moreLinks) {
+          if (err) return next(err)
+          return next(null, [link].concat(moreLinks || []))
         })
+      }, function(err, links) {
+        if (err) return done(err)
+        done(null, links.reduce(function(all, cur) {
+          return all.concat(cur)
+        }, []))
       })
     })
   }
-
 }
 
 function _linklocal(pkgpath, done) {
@@ -112,25 +112,43 @@ module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath
   done = once(done)
   findLinks(pkgpath, fs.realpathSync(pkgpath), function(err, links) {
     if (err) return done(err)
-    links = links.map(function(link) {
-      return path.join(fs.realpathSync(path.dirname(link)), path.basename(link))
+    map(links, Infinity, function(link, next) {
+      fs.realpath(path.dirname(link), function(err, realPath) {
+        if (err) return next(err)
+        next(null, path.join(realPath, path.basename(link)))
+      })
+    }, function(err, links) {
+      if (err) return done(err)
+      links = links.filter(function(item, index, arr) {
+        return arr.indexOf(item) === index
+      })
+      .sort(function(dirA, dirB) {
+        if (dirA === dirB) return 0
+        if (dirB.indexOf(dirA) === 0) return 1
+        return -1
+      })
+      map(links, Infinity, function(item, next) {
+        fs.lstat(item, function(err, stat) {
+          if (err) return next(err)
+          return next(null, stat.isSymbolicLink())
+        })
+      }, function(err, isSymbolicLink) {
+        if (err) return done(err)
+        var symlinks = links.filter(function(link, i) {
+          return isSymbolicLink[i]
+        })
+        map(symlinks, Infinity, function(symlink, next) {
+          fs.readlink(symlink, function(err, rel) {
+            if (err) return next(err)
+            var src = path.resolve(symlink, rel)
+            fs.unlink(symlink, function(err) {
+              if (err) return next(err)
+              next(null, {src: src, link: symlink})
+            })
+          })
+        }, done)
+      })
     })
-    .filter(function(item, index, arr) {
-      return arr.indexOf(item) === index
-    })
-    .sort(function(dirA, dirB) {
-      if (dirA === dirB) return 0
-      if (dirB.indexOf(dirA) === 0) return 1
-      return -1
-    })
-    .filter(function(item) {
-      return fs.lstatSync(item).isSymbolicLink()
-    })
-    links.forEach(function(dir) {
-      fs.unlinkSync(dir)
-    })
-
-    done(null, links)
   })
 
   function findLinks(pkgpath, realPath, done) {
@@ -247,7 +265,8 @@ function doLink(packages, node_modules, done) {
       function bump(err) {
         if (err) return done(err)
         fs.realpath(path.dirname(dest), function(err, realPath) {
-          dests.push(dest)
+          dest = path.join(realPath, path.basename(dest))
+          dests.push({link: dest, src: dir})
           debug('Linked ' + name + ' into ./' + path.relative(process.cwd(), dest))
           if (!--pending) return done(null, dests)
         })
@@ -276,14 +295,17 @@ function doUnlink(packages, node_modules, done) {
         if (err && err.code === 'ENOENT') return bump()
         if (err) return done(err)
         if (!stat || !stat.isSymbolicLink()) return bump()
-        fs.unlink(dest, function(err) {
+        fs.readlink(dest, function(err, src) {
           if (err) return done(err)
-          fs.realpath(path.dirname(dest), function(err, realPath) {
+          fs.unlink(dest, function(err) {
             if (err) return done(err)
-            dest = path.join(realPath, path.basename(dest))
-            dests.push(dest)
-            debug('Unlinked ' + name + ' from ./' + path.relative(process.cwd(), dest))
-            bump()
+            fs.realpath(path.dirname(dest), function(err, realPath) {
+              if (err) return done(err)
+              dest = path.join(realPath, path.basename(dest))
+              dests.push({link: dest, src: src})
+              debug('Unlinked ' + name + ' from ./' + path.relative(process.cwd(), dest))
+              bump()
+            })
           })
         })
       })

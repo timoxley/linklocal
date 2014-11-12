@@ -38,7 +38,7 @@ test('link circular dependencies recursive', function(t) {
   linklocal.link.recursive(PKG_A, function(err, linked) {
     t.ifError(err)
     var expected = LINKS.slice()
-    t.deepEqual(linked, expected)
+    t.deepEqual(linked.map(getLink), expected)
     t.end()
   })
 })
@@ -50,7 +50,7 @@ test('link circular dependencies recursive after install', function(t) {
     linklocal.link.recursive(PKG_A, function(err, linked) {
       t.ifError(err)
       var expected = LINKS.slice()
-      t.deepEqual(linked, expected)
+      t.deepEqual(linked.map(getLink), expected)
       t.end()
     })
   })
@@ -61,7 +61,7 @@ test('link circular dependencies non-recursive', function(t) {
   setup()
   linklocal.link(PKG_A, function(err, linked) {
     t.ifError(err)
-    t.deepEqual(linked, [A_TO_B])
+    t.deepEqual(linked.map(getLink), [A_TO_B])
     t.end()
   })
 })
@@ -73,7 +73,7 @@ test('unlink circular dependencies recursive', function(t) {
     linklocal.unlink.recursive(PKG_A, function(err, linked) {
       t.ifError(err)
       var expected = LINKS.slice()
-      t.deepEqual(linked, expected)
+      t.deepEqual(linked.map(getLink), expected)
       t.end()
     })
   })
@@ -88,7 +88,7 @@ test('unlink circular dependencies recursive after install', function(t) {
       linklocal.unlink.recursive(PKG_A, function(err, linked) {
         t.ifError(err)
         var expected = LINKS.slice()
-        t.deepEqual(linked, expected)
+        t.deepEqual(linked.map(getLink), expected)
         t.end()
       })
     })
@@ -101,8 +101,12 @@ test('unlink circular dependencies non-recursive', function(t) {
     t.ifError(err)
     linklocal.unlink(PKG_A, function(err, linked) {
       t.ifError(err)
-      t.deepEqual(linked, [A_TO_B])
+      t.deepEqual(linked.map(getLink), [A_TO_B])
       t.end()
     })
   })
 })
+
+function getLink(item) {
+  return item.link
+}
