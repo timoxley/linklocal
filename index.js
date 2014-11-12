@@ -302,6 +302,7 @@ function doUnlink(packages, node_modules, done) {
             fs.realpath(path.dirname(dest), function(err, realPath) {
               if (err) return done(err)
               dest = path.join(realPath, path.basename(dest))
+              src = path.resolve(realPath, src)
               dests.push({link: dest, src: src})
               debug('Unlinked ' + name + ' from ./' + path.relative(process.cwd(), dest))
               bump()
