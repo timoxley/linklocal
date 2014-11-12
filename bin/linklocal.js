@@ -54,14 +54,24 @@ fn(dir, pkg, function(err, items) {
 })
 
 var formats = {
-  '%s': 'link',
-  '%h': 'src'
+  '%S': function(obj) {
+    return obj.link
+  },
+  '%H': function(obj) {
+    return obj.src
+  },
+  '%s': function(obj) {
+    return path.relative(process.cwd(), obj.link)
+  },
+  '%h': function(obj) {
+    return path.relative(process.cwd(), obj.src)
+  }
 }
 
 function formatOut(input, format) {
   var output = format
   for (var key in formats) {
-    output = output.replace(new RegExp(key, 'gm'), input[formats[key]])
+    output = output.replace(new RegExp(key, 'gm'), formats[key](input))
   }
   return output
 }
