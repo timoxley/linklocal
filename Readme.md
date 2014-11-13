@@ -143,7 +143,7 @@ certain local dependees are using the latest changes.
 `linklocal` does not install dependencies of linked dependencies. To have dependencies installed, use [timoxley/bulk](https://github.com/timoxley/bulk) in a script like:
 ```json
 {
-  "name": "my-app"
+  "name": "my-app",
   "scripts": {
     "dev": "linklocal -r --format='%h' | sort | uniq | bulk -c 'npm install --production'",
     "prepublish": "if [[ $NODE_ENV != 'production' ]]; then npm run dev; fi"
