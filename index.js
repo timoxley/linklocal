@@ -3,211 +3,196 @@
 var fs = require('fs')
 var path = require("path")
 var debug = require('debug')('linklocal')
-var once = require('once')
 var mkdirp = require('mkdirp')
 var rimraf = require('rimraf')
 var assert = require('assert')
 var map = require('map-limit')
 
-var linklocal = module.exports = function linklocal(dirpath, pkgpath, done) {
-  if (arguments.length === 2) {
-    done = pkgpath
-    pkgpath = path.resolve(dirpath, 'package.json')
-    return linklocal(dirpath, pkgpath, done)
+module.exports = function linklocal(dirpath, _done) {
+  function done(err, items) {
+    _done(err, items || [])
   }
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
-  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
   assert.equal(typeof done, 'function', 'done should be a function')
 
-  done = once(done)
-  var node_modules = path.join(
-    path.resolve(dirpath),
-    'node_modules'
-  )
-  getLocals(dirpath, pkgpath, function(err, locals) {
+  readPackage(dirpath, function(err, pkg) {
     if (err) return done(err)
-    doLink(locals, node_modules, done)
+    getLinks(pkg, function(err, links) {
+      if (err) return done(err)
+      filterAllLinksToUnlink(links, function(err, toUnlink) {
+        if (err) return done(err)
+        unlinkLinks(toUnlink, function(err) {
+          if (err) return done(err)
+          linkLinks(links, function(err) {
+            if (err) return done(err)
+            done(null, links)
+          })
+        })
+      })
+    })
   })
 }
 
 module.exports.link = module.exports
 
-module.exports.link.recursive = function linklocalRecursive(dirpath, pkgpath, done) {
-  if (arguments.length === 2) {
-    done = pkgpath
-    pkgpath = path.resolve(dirpath, 'package.json')
-    return linklocal.recursive(dirpath, pkgpath, done)
-  }
+module.exports.link.recursive = function linklocalRecursive(dirpath, done) {
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
-  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
   assert.equal(typeof done, 'function', 'done should be a function')
 
-  done = once(done)
-  var allLinkedDirs = []
-
-  _linklocalRecursive(pkgpath, done)
-
-  function _linklocalRecursive(pkgpath, done) {
-    _linklocal(pkgpath, function(err, linkedDirs) {
+  readPackage(dirpath, function(err, pkg) {
+    if (err) return done(err)
+    getLinksRecursive(pkg, function(err, links) {
       if (err) return done(err)
-      linkedDirs = linkedDirs || []
-      map(linkedDirs, 1, function(link, next) {
-        _linklocalRecursive(path.resolve(link.src, 'package.json'), function(err, moreLinks) {
-          if (err) return next(err)
-          return next(null, [link].concat(moreLinks || []))
-        })
-      }, function(err, links) {
+      filterAllLinksToUnlink(links, function(err, toUnlink) {
         if (err) return done(err)
-        done(null, links.reduce(function(all, cur) {
-          return all.concat(cur)
-        }, []))
-      })
-    })
-  }
-}
-
-function _linklocal(pkgpath, done) {
-  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
-  assert.equal(typeof done, 'function', 'done should be a function')
-  done = once(done)
-  var realPkgPath = fs.realpathSync(path.dirname(pkgpath))
-  linklocal(realPkgPath, pkgpath, function(err, linkedDirs) {
-    if (err) return done(err)
-    done(null, linkedDirs)
-  })
-}
-
-module.exports.unlink = function unlinklocal(dirpath, pkgpath, done) {
-  if (arguments.length === 2) {
-    done = pkgpath
-    pkgpath = path.resolve(dirpath, 'package.json')
-    return unlinklocal(dirpath, pkgpath, done)
-  }
-  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
-  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
-  assert.equal(typeof done, 'function', 'done should be a function')
-
-  done = once(done)
-  var node_modules = path.join(
-    path.resolve(dirpath),
-    'node_modules'
-  )
-
-  getLocals(dirpath, pkgpath, function(err, locals) {
-    if (err) return done(err)
-    doUnlink(locals, node_modules, done)
-  })
-}
-
-module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, pkgpath, done) {
-  if (arguments.length === 2) {
-    done = pkgpath
-    pkgpath = path.resolve(dirpath, 'package.json')
-    return linklocal.unlink.recursive(dirpath, pkgpath, done)
-  }
-  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
-  assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
-  assert.equal(typeof done, 'function', 'done should be a function')
-
-  done = once(done)
-  findLinks(pkgpath, fs.realpathSync(pkgpath), function(err, links) {
-    if (err) return done(err)
-    map(links, Infinity, function(link, next) {
-      fs.realpath(path.dirname(link), function(err, realPath) {
-        if (err) return next(err)
-        next(null, path.join(realPath, path.basename(link)))
-      })
-    }, function(err, links) {
-      if (err) return done(err)
-      links = links.filter(function(item, index, arr) {
-        return arr.indexOf(item) === index
-      })
-      .sort(function(dirA, dirB) {
-        if (dirA === dirB) return 0
-        if (dirB.indexOf(dirA) === 0) return 1
-        return -1
-      })
-      map(links, Infinity, function(item, next) {
-        fs.lstat(item, function(err, stat) {
-          if (err) return next(err)
-          return next(null, stat.isSymbolicLink())
-        })
-      }, function(err, isSymbolicLink) {
-        if (err) return done(err)
-        var symlinks = links.filter(function(link, i) {
-          return isSymbolicLink[i]
-        })
-        map(symlinks, Infinity, function(symlink, next) {
-          fs.readlink(symlink, function(err, rel) {
-            if (err) return next(err)
-            var src = path.resolve(symlink, rel)
-            fs.unlink(symlink, function(err) {
-              if (err) return next(err)
-              next(null, {src: src, link: symlink})
-            })
-          })
-        }, done)
-      })
-    })
-  })
-
-  function findLinks(pkgpath, realPath, done) {
-    assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
-    done = once(done)
-
-    var pkgDirpath = path.dirname(pkgpath)
-    var realDirpath = fs.realpathSync(path.dirname(realPath))
-    var node_modules = path.join(
-      path.resolve(pkgDirpath),
-      'node_modules'
-    )
-
-    var links = []
-    getLocals(realDirpath, pkgpath, function(err, locals) {
-      if (err) return done(err)
-      var pending = 0
-      var links = locals.filter(function(dir) {
-        return fs.existsSync(dir)
-      }).map(function(dir) {
-        var pkg = JSON.parse(fs.readFileSync(path.resolve(dir, 'package.json')))
-        var name = pkg.name
-        return path.join(node_modules, name)
-      }).filter(function(dir) {
-        return fs.existsSync(dir)
-      })
-      if (!links.length) return done(null, links)
-      links.forEach(function(dir) {
-        links.push(dir)
-        pending++
-        findLinks(path.resolve(dir, 'package.json'), path.resolve(dir, 'package.json'), function(err, subLinks) {
+        unlinkLinks(toUnlink, function(err) {
           if (err) return done(err)
-          links = links.concat(subLinks)
-          if (!--pending) return done(null, links)
+          linkLinks(links, function(err) {
+            if (err) return done(err)
+            done(null, links)
+          })
         })
       })
     })
-  }
+  })
 }
 
-function getLocals(dirpath, pkgpath, done) {
-  fs.realpath(dirpath, function(err, dirpath) {
+module.exports.unlink = function unlinklocal(dirpath, done) {
+  readPackage(dirpath, function(err, pkg) {
     if (err) return done(err)
-    fs.realpath(pkgpath, function(err, pkgpath) {
+    getLinks(pkg, function(err, links) {
       if (err) return done(err)
-      assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
-      assert.equal(typeof pkgpath, 'string', 'pkgpath should be a string')
-      var pkg = JSON.parse(fs.readFileSync(pkgpath))
-      var deps = getDependencies(pkg)
-      var locals = Object.keys(deps).filter(function(name) {
-        var val = deps[name]
-        return isLocal(val)
-      }).map(function(name) {
-        var pkgPath = deps[name]
-        pkgPath = pkgPath.replace(/^file:/g, '')
-        return path.resolve(dirpath, pkgPath)
+      filterLinksToUnlink(links, function(err, toUnlink) {
+        if (err) return done(err)
+        unlinkLinks(toUnlink, function(err) {
+          if (err) return done(err)
+          done(null, toUnlink)
+        })
       })
-      done(null, locals)
     })
+  })
+}
+
+module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, done) {
+  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+  assert.equal(typeof done, 'function', 'done should be a function')
+
+  readPackage(dirpath, function(err, pkg) {
+    if (err) return done(err)
+    getLinksRecursive(pkg, function(err, links) {
+      if (err) return done(err)
+      filterLinksToUnlink(links, function(err, toUnlink) {
+        if (err) return done(err)
+        unlinkLinks(toUnlink, function(err) {
+          if (err) return done(err)
+          done(null, toUnlink)
+        })
+      })
+    })
+  })
+}
+
+module.exports.list = function list(dirpath, done){
+  readPackage(dirpath, function(err, pkg) {
+    if (err) return done(err)
+    getLinks(pkg, done)
+  })
+}
+
+module.exports.list.recursive = function listRecursive(dirpath, done){
+  readPackage(dirpath, function(err, pkg) {
+    if (err) return done(err)
+    getLinksRecursive(pkg, done)
+  })
+}
+
+function getLinksRecursive(pkg, done) {
+  var _cache = _cache || {}
+
+  return (function _getLinksRecursive(pkg, done) {
+    if (_cache[pkg.dirpath]) return done(null, _cache[pkg.dirpath])
+    getLinks(pkg, function(err, links) {
+      _cache[pkg.dirpath] = _cache[pkg.dirpath] || []
+      if (err) return done(err)
+      _cache[pkg.dirpath] = _cache[pkg.dirpath].concat(links)
+      map(links, Infinity, function(link, next) {
+        readPackage(link.to, function(err, pkg) {
+          if (err) return next(err)
+          _getLinksRecursive(pkg, next)
+        })
+      }, done)
+    })
+  })(pkg, function(err) {
+    if (err) return done(err)
+    return done(null, Object.keys(_cache).reduce(function(result, key) {
+      return result.concat(_cache[key])
+    }, []))
+  })
+}
+
+function getLocalDependenciesRecursive(pkg, done) {
+  var _cache = _cache || {}
+
+  return (function _getLocalDependenciesRecursive(pkg, done) {
+    if (_cache[pkg.dirpath]) return done()
+    getLocalDependencies(pkg, function(err, localDependencies) {
+      _cache[pkg.dirpath] = true
+      if (err) return done(err)
+      map(localDependencies, Infinity, function(localDependency, next) {
+        readPackage(localDependency, function(err, childPkg) {
+          if (err) return next(err)
+          _getLocalDependenciesRecursive(childPkg, next)
+        })
+      }, done)
+    })
+  })(pkg, function(err) {
+    if (err) return done(err)
+    return done(null, Object.keys(_cache))
+  })
+}
+
+function getRealPaths(links, done) {
+  map(links, Infinity, function(link, next) {
+    fs.realpath(path.dirname(link), function(err, realPath) {
+      if (err) return next(err)
+      next(null, path.join(realPath, path.basename(link)))
+    })
+  }, function(err, links) {
+    done(err, sortDirs(unique(links || [])))
+  })
+}
+
+function readPackage(dirpath, done) {
+  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+  var pkgpath = path.join(dirpath, 'package.json')
+  fs.readFile(pkgpath, function(err, data) {
+    if (err) return done(err)
+    try {
+    var pkg = JSON.parse(data)
+    } catch(e) {return done(e)}
+    pkg.dirpath = dirpath
+    return done(null, pkg)
+  })
+}
+
+function getLocalDependencies(pkg, done) {
+  assert.equal(typeof pkg, 'object', 'pkg should be an object')
+  var deps = getDependencies(pkg)
+  var localDependencies = getPackageLocalDependencies(pkg)
+  .map(function(name) {
+    var pkgPath = deps[name]
+    pkgPath = pkgPath.replace(/^file:/g, '')
+    return path.resolve(pkg.dirpath, pkgPath)
+  })
+  getRealPaths(localDependencies, done)
+}
+
+function getPackageLocalDependencies(pkg) {
+  assert.equal(typeof pkg, 'object', 'pkg should be an object')
+  var deps = getDependencies(pkg)
+  return Object.keys(deps).filter(function(name) {
+    var dep = deps[name]
+    return isLocalDependency(dep)
   })
 }
 
@@ -220,7 +205,7 @@ function getDependencies(pkg) {
   return deps
 }
 
-function isLocal(val) {
+function isLocalDependency(val) {
   return (
     val.indexOf('.') === 0 ||
     val.indexOf('/') === 0 ||
@@ -228,92 +213,123 @@ function isLocal(val) {
   )
 }
 
-function doLink(packages, node_modules, done) {
-  packages = packages || []
-  var pending = packages.length
-  var dests = []
-  if (!packages.length) return done(null, [])
-  packages.forEach(function(dir) {
-    fs.realpath(dir, function(err, dir) {
+function getLinks(pkg, done) {
+  getLocalDependencies(pkg, function(err, localDependencies) {
+    if (err) return done(err)
+    var destination = path.join(pkg.dirpath, 'node_modules')
+    map(localDependencies, Infinity, readPackage, function(err, localDependencyPackages) {
       if (err) return done(err)
-      var pkg = require(path.resolve(dir, 'package.json'))
-      var name = pkg.name
-      var dest = path.join(node_modules, name)
-      var rel = path.relative(path.dirname(dest), dir)
-      mkdirp(path.dirname(dest), function(err) {
-        if (err && err.code !== 'EEXISTS') return done(err)
-        fs.realpath(dest, function(err, realPath) {
-          if (err && err.code !== 'ENOENT') return done(err)
-          if (realPath && dest !== realPath) {
-            rel = path.relative(dest, dir)
-            if (realPath === dir) return skip()
-          }
-          fs.lstat(dest, function(err, stat) {
-            if (err && err.code === 'ENOENT') return link()
-            if (err) return done(err)
-            if (!stat.isSymbolicLink()) return rimraf(dest, link)
-            fs.unlink(dest, link)
-          })
-        })
+      var links = localDependencyPackages.map(function(localDependency) {
+        return {
+          from: path.resolve(destination, localDependency.name),
+          to: localDependency.dirpath
+        }
       })
-
-      function link(err) {
-        if (err) return done(err)
-        fs.symlink(rel, dest, 'junction', bump)
-      }
-
-      function bump(err) {
-        if (err) return done(err)
-        fs.realpath(path.dirname(dest), function(err, realPath) {
-          dest = path.join(realPath, path.basename(dest))
-          dests.push({link: dest, src: dir})
-          debug('Linked ' + name + ' into ./' + path.relative(process.cwd(), dest))
-          if (!--pending) return done(null, dests)
-        })
-      }
-
-      function skip(err) {
-        if (err) return done(err)
-        if (!--pending) return done(null, dests)
-      }
+      done(null, links)
     })
   })
 }
 
-function doUnlink(packages, node_modules, done) {
-  packages = packages || []
-  var pending = packages.length
-  var dests = []
-  if (!packages.length) return done(null, [])
-  packages.forEach(function(dir) {
-    fs.realpath(dir, function(err, dir) {
+function isSymbolicLink(filepath, done) {
+  exists(filepath, function(err, doesExist) {
+    if (err) return done(err)
+    if (!doesExist) return done(null, false)
+    fs.lstat(filepath, function(err, stat) {
       if (err) return done(err)
-      var pkg = require(path.resolve(dir, 'package.json'))
-      var name = pkg.name
-      var dest = path.join(node_modules, name)
-      fs.lstat(dest, function(err, stat) {
-        if (err && err.code === 'ENOENT') return bump()
-        if (err) return done(err)
-        if (!stat || !stat.isSymbolicLink()) return bump()
-        fs.readlink(dest, function(err, src) {
-          if (err) return done(err)
-          fs.unlink(dest, function(err) {
-            if (err) return done(err)
-            fs.realpath(path.dirname(dest), function(err, realPath) {
-              if (err) return done(err)
-              dest = path.join(realPath, path.basename(dest))
-              src = path.resolve(realPath, src)
-              dests.push({link: dest, src: src})
-              debug('Unlinked ' + name + ' from ./' + path.relative(process.cwd(), dest))
-              bump()
-            })
-          })
-        })
-      })
-
-      function bump() {
-        if (!--pending) return done(null, dests)
-      }
+      return done(null, stat.isSymbolicLink())
     })
+  })
+}
+
+function linksTo(from, to, done) {
+  to = path.resolve(path.dirname(from), to)
+  isSymbolicLink(from, function(err, isLink) {
+    if (err) return done(err)
+    if (!isLink) return done(null, false)
+    fs.readlink(from, function(err, currentLink) {
+      if (err) return done(err)
+      currentLink = path.resolve(path.dirname(from), currentLink)
+      return done(null, currentLink === to)
+    })
+  })
+}
+
+function filterLinksToUnlink(links, done) {
+  filter(links, Infinity, function(link, next) {
+    linksTo(link.from, link.to, next)
+  }, done)
+}
+
+function filterAllLinksToUnlink(links, done) {
+  filter(links, Infinity, function(link, next) {
+    exists(link.from, function(err, ex) {
+      next(err, ex)
+    })
+  }, function(err, toUnlink) {
+    if (err) return done(err)
+    return done(null, toUnlink)
+  })
+}
+
+function linkLinks(links, done) {
+  assert.ok(Array.isArray(links), 'links should be an array')
+  map(links, Infinity, function(link, next) {
+    mkdirp(path.dirname(link.from), function(err) {
+      if (err && err.code !== 'EEXISTS') return next(err)
+      var from = link.from
+      var to = path.relative(path.dirname(link.from), link.to)
+      fs.symlink(to, from, 'junction', function(err) {
+        if (err) return next(err)
+        next(null, link)
+      })
+    })
+  }, done)
+}
+
+function unlinkLinks(links, done) {
+  assert.ok(Array.isArray(links), 'links should be an array')
+  map(links, Infinity, function(link, next) {
+    isSymbolicLink(link.from, function(err, isSymlink) {
+      if (err) return next(err)
+      var remove = isSymlink ? fs.unlink : rimraf
+      return remove(link.from, function(err) {
+        if (err) return next(err)
+        next(err, link)
+      })
+    })
+  }, done)
+}
+
+function unique(arr) {
+  return arr.filter(function(item, index, arr) {
+    return arr.indexOf(item) === index
+  })
+}
+
+function notUnique(arr) {
+  return arr.filter(function(item, index, arr) {
+    return arr.indexOf(item) !== index
+  })
+}
+
+function sortDirs(dirs) {
+  return dirs.sort(function(dirA, dirB) {
+    if (dirA === dirB) return 0
+    if (dirB.indexOf(dirA) === 0) return 1
+    return -1
+  })
+}
+
+function filter(arr, num, filterFn, done) {
+  map(arr, num, filterFn, function(err, matches) {
+    return done(err, arr.filter(function(item, index) {
+      return !!matches[index]
+    }))
+  })
+}
+
+function exists(filepath, done) {
+  fs.exists(filepath, function(exists) {
+    done(null, exists)
   })
 }

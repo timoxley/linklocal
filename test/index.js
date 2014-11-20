@@ -50,6 +50,22 @@ test('can swap local packages for links', function(t) {
   })
 })
 
+test('link works without npm install', function(t) {
+  setup()
+  linklocal(PKG_DIR, function(err, linked) {
+    t.ifError(err)
+    t.deepEqual(linked.map(getLink).sort(), LINKS)
+    LINKS.forEach(function(link) {
+      var exists = fs.existsSync(link)
+      t.ok(exists, 'exists')
+      if (!exists) return
+      var stat = fs.lstatSync(link)
+      t.ok(stat.isSymbolicLink(), 'is symbolic link')
+    })
+    t.end()
+  })
+})
+
 test('can unlink local packages', function(t) {
   setup()
   linklocal(PKG_DIR, function testLinked(err, linked) {
@@ -101,5 +117,5 @@ test('can handle zero dependencies', function(t) {
 })
 
 function getLink(item) {
-  return item.link
+  return item.from
 }

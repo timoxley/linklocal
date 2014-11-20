@@ -35,9 +35,8 @@ function setup() {
 
 test('can link nested', function(t) {
   setup()
-  var PKG_PATH = path.resolve(__dirname, 'salad', 'package.json')
-  var PKG_DIR = path.dirname(PKG_PATH)
-  linklocal.recursive(PKG_DIR, PKG_PATH, function(err, linked) {
+  var PKG_DIR = path.resolve(__dirname, 'salad')
+  linklocal.recursive(PKG_DIR, function(err, linked) {
     t.ifError(err)
     t.ok(linked)
 
@@ -60,15 +59,14 @@ test('can link nested', function(t) {
 
 test('can unlink nested', function(t) {
   setup()
-  var PKG_PATH = path.resolve(__dirname, 'salad', 'package.json')
-  var PKG_DIR = path.dirname(PKG_PATH)
+  var PKG_DIR = path.resolve(__dirname, 'salad')
 
   var expectedLinks = bowlModules
 
-  linklocal.link.recursive(PKG_DIR, PKG_PATH, function(err, linked) {
+  linklocal.link.recursive(PKG_DIR, function(err, linked) {
     t.ifError(err)
     t.deepEqual(linked.map(getLink).sort(), expectedLinks.sort())
-    linklocal.unlink.recursive(PKG_DIR, PKG_PATH, function(err, unlinked) {
+    linklocal.unlink.recursive(PKG_DIR, function(err, unlinked) {
       t.ifError(err)
       t.ok(unlinked)
       t.deepEqual(unlinked.map(getLink).sort(), expectedLinks.sort())
@@ -84,9 +82,8 @@ test('can unlink nested', function(t) {
 
 test('can link no dependencies', function(t) {
   setup()
-  var PKG_PATH = path.resolve(__dirname, 'empty', 'package.json')
-  var PKG_DIR = path.dirname(PKG_PATH)
-  linklocal.recursive(PKG_DIR, PKG_PATH, function(err, linked) {
+  var PKG_DIR = path.resolve(__dirname, 'empty')
+  linklocal.recursive(PKG_DIR, function(err, linked) {
     t.ifError(err)
     t.ok(linked)
     var expectedLinks = bowlModules
@@ -97,10 +94,9 @@ test('can link no dependencies', function(t) {
 
 test('unlink can handle zero dependencies', function(t) {
   setup()
-  var PKG_PATH = path.resolve(__dirname, 'empty', 'package.json')
-  var PKG_DIR = path.dirname(PKG_PATH)
+  var PKG_DIR = path.resolve(__dirname, 'empty')
 
-  linklocal.unlink.recursive(PKG_DIR, PKG_PATH, function(err, unlinked) {
+  linklocal.unlink.recursive(PKG_DIR, function(err, unlinked) {
     t.ifError(err)
     t.ok(unlinked)
     t.deepEqual(unlinked, [])
@@ -110,10 +106,9 @@ test('unlink can handle zero dependencies', function(t) {
 
 test('unlink can handle not linked', function(t) {
   setup()
-  var PKG_PATH = path.resolve(__dirname, 'salad', 'package.json')
-  var PKG_DIR = path.dirname(PKG_PATH)
+  var PKG_DIR = path.resolve(__dirname, 'salad')
 
-  linklocal.unlink.recursive(PKG_DIR, PKG_PATH, function(err, unlinked) {
+  linklocal.unlink.recursive(PKG_DIR, function(err, unlinked) {
     t.ifError(err)
     t.ok(unlinked)
     t.deepEqual(unlinked, [])
@@ -122,5 +117,5 @@ test('unlink can handle not linked', function(t) {
 })
 
 function getLink(item) {
-  return item.link
+  return item.from
 }

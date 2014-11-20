@@ -14,6 +14,8 @@ npm install -g linklocal
 ## Usage
 
 ```
+linklocal --help
+
   Usage: linklocal [options] <dir>
 
   Options:
@@ -22,15 +24,25 @@ npm install -g linklocal
     -V, --version          output the version number
     -u, --unlink           Unlink local dependencies
     -l, --link             Link local dependencies [default]
+    --list                 List all local dependencies regardless whether they are linked or not.
     -r, --recursive        Link recursively
     -f, --format [format]  output format
+    --links                Output only symlinks (--format="%s")
+    --files                Output only symlink targets (--format="%h") [default]
+    --long                 Output the symlink to hardlink mapping (--format="%s -> %h")
+    --absolute             Format output paths as absolute paths
+    -q, --unique           Only unique lines of output
 
   Examples
 
     $ linklocal                 # link local deps in current dir
+    $ linklocal link            # link local deps in current dir
     $ linklocal -r              # link local deps recursively
     $ linklocal unlink          # unlink only in current dir
     $ linklocal unlink -r       # unlink recursively
+
+    $ linklocal list            # list all local deps, ignores link status
+    $ linklocal list -r         # list all local deps recursively, ignoring link status
 
     $ linklocal -- mydir        # link local deps in mydir
     $ linklocal unlink -- mydir # unlink local deps in mydir
@@ -145,7 +157,7 @@ certain local dependees are using the latest changes.
 {
   "name": "my-app",
   "scripts": {
-    "dev": "linklocal -r --format='%h' | sort | uniq | bulk -c 'npm install --production'",
+    "dev": "linklocal link -r && linklocal list -r | bulk -c 'npm install --production'",
     "prepublish": "if [[ $NODE_ENV != 'production' ]]; then npm run dev; fi"
   }
 }

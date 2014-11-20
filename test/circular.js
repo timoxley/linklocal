@@ -66,10 +66,33 @@ test('link circular dependencies non-recursive', function(t) {
   })
 })
 
+test('unlink circular dependencies not linked', function(t) {
+  setup()
+  linklocal.unlink.recursive(PKG_A, function(err, linked) {
+    t.ifError(err)
+    t.deepEqual(linked, [])
+    t.end()
+  })
+})
+
+test('unlink circular dependencies installed, not linked', function(t) {
+  setup()
+  exec('npm install', {cwd: PKG_A}, function(err) {
+    linklocal.unlink.recursive(PKG_A, function(err, linked) {
+      t.ifError(err)
+      t.deepEqual(linked, [])
+      t.end()
+    })
+  })
+})
+
 test('unlink circular dependencies recursive', function(t) {
   setup()
   linklocal.link.recursive(PKG_A, function(err, linked) {
     t.ifError(err)
+    var expected = LINKS.slice()
+    t.deepEqual(linked.map(getLink), expected)
+
     linklocal.unlink.recursive(PKG_A, function(err, linked) {
       t.ifError(err)
       var expected = LINKS.slice()
@@ -108,5 +131,5 @@ test('unlink circular dependencies non-recursive', function(t) {
 })
 
 function getLink(item) {
-  return item.link
+  return item.from
 }
