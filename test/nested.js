@@ -22,7 +22,8 @@ var bowlModules = [
   path.resolve(bowlModulesPath, '@nuts', 'almond'),
   path.resolve(bowlModulesPath, 'apple'),
   path.resolve(bowlModulesPath, 'banana'),
-  path.resolve(banana, 'node_modules', 'apple')
+  path.resolve(banana, 'node_modules', 'apple'),
+  path.resolve(almond, 'node_modules', 'apple')
 ]
 
 function setup() {
