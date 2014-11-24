@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "deep-b": "file:../b",
-    "deep-c": "file:../c"
+    "deep-e": "file:../deep-b",
+    "deep-c": "file:../deep-c"
   }
 }
 

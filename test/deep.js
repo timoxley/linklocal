@@ -10,14 +10,18 @@ var rimraf = require('rimraf')
 var linklocal = require("../")
 
 var deep = path.resolve(__dirname, 'deep')
-var deepA = path.resolve(__dirname, 'deep-a')
-var deepB = path.resolve(__dirname, 'deep-b')
-var deepC = path.resolve(__dirname, 'deep-c')
-var deepD = path.resolve(__dirname, 'deep-d')
+var deepA = path.resolve(deep, 'deep-a')
+var deepB = path.resolve(deep, 'deep-b')
+var deepC = path.resolve(deep, 'deep-c')
+var deepD = path.resolve(deep, 'deep-d')
 
 var expectedLinks = [
-  //path.resolve(banana, 'node_modules', 'apple'),
-  //path.resolve(almond, 'node_modules', 'apple')
+  path.resolve(deepA, 'node_modules/deep-b'),
+  path.resolve(deepA, 'node_modules/deep-c'),
+  path.resolve(deepB, 'node_modules/deep-d'),
+  path.resolve(deepC, 'node_modules/deep-d'),
+  path.resolve(deepD, 'node_modules/deep-a'),
+  path.resolve(deep,  'node_modules/deep-a')
 ]
 
 function setup() {
@@ -33,20 +37,7 @@ test('can link deep', function(t) {
   linklocal.recursive(deep, function(err, linked) {
     t.ifError(err)
     t.ok(linked)
-
-    //var expectedLinks = bowlModules
-
-    //t.deepEqual(linked.map(getLink).sort(), expectedLinks.sort())
-
-    //var stat = fs.lstatSync(path.resolve(saladModulesPath, 'bowl'))
-    //t.ok(stat.isSymbolicLink(), 'bowl is symbolic link')
-    //t.ok(fs.existsSync(bowl), 'bowl exists')
-
-    //bowlModules.forEach(function(bowlModule) {
-      //var stat = fs.lstatSync(bowlModule)
-      //t.ok(stat.isSymbolicLink(), 'is symbolic link')
-      //t.ok(fs.existsSync(bowlModule), 'exists')
-    //})
+    t.deepEqual(linked.map(getFrom).sort(), expectedLinks.sort())
     t.end()
   })
 })
@@ -59,43 +50,12 @@ test('can unlink nested', function(t) {
     linklocal.unlink.recursive(deep, function(err, linked) {
       t.ifError(err)
       t.ok(linked)
+      t.deepEqual(linked.map(getFrom).sort(), expectedLinks.sort())
       t.end()
     })
   })
 })
 
-    //var expectedLinks = bowlModules
-
-    //t.deepEqual(linked.map(getLink).sort(), expectedLinks.sort())
-
-    //var stat = fs.lstatSync(path.resolve(saladModulesPath, 'bowl'))
-    //t.ok(stat.isSymbolicLink(), 'bowl is symbolic link')
-    //t.ok(fs.existsSync(bowl), 'bowl exists')
-
-    //bowlModules.forEach(function(bowlModule) {
-      //var stat = fs.lstatSync(bowlModule)
-      //t.ok(stat.isSymbolicLink(), 'is symbolic link')
-      //t.ok(fs.existsSync(bowlModule), 'exists')
-    //})
-    //t.end()
-  //})
-  //var PKG_DIR = path.resolve(__dirname, 'salad')
-
-  //var expectedLinks = bowlModules
-
-  //linklocal.link.recursive(PKG_DIR, function(err, linked) {
-    //t.ifError(err)
-    //t.deepEqual(linked.map(getLink).sort(), expectedLinks.sort())
-    //linklocal.unlink.recursive(PKG_DIR, function(err, unlinked) {
-      //t.ifError(err)
-      //t.ok(unlinked)
-      //t.deepEqual(unlinked.map(getLink).sort(), expectedLinks.sort())
-      //t.notOk(fs.existsSync(path.join(saladModulesPath, bowl)), 'bowl does not exist')
-
-      //bowlModules.forEach(function(bowlModule) {
-        //t.notOk(fs.existsSync(bowlModule), 'exists')
-      //})
-      //t.end()
-    //})
-  //})
-//})
+function getFrom(item) {
+  return item.from
+}

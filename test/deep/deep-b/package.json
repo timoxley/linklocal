@@ -1,13 +1,11 @@
 {
-  "name": "deep-d",
+  "name": "deep-b",
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "deep-a": "file:../a"
+    "deep-d": "file:../deep-d"
   }
 }
-
-
 
 
 
