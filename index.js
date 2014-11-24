@@ -124,9 +124,11 @@ function getLinksRecursive(pkg, done) {
     })
   })(pkg, function(err) {
     if (err) return done(err)
-    return done(null, Object.keys(_cache).reduce(function(result, key) {
+    var result = Object.keys(_cache).reduce(function(result, key) {
       return result.concat(_cache[key])
-    }, []))
+    }, [])
+    result = uniqueKeys(result, 'from', 'to')
+    return done(null, result)
   })
 }
 
@@ -255,12 +257,14 @@ function linksTo(from, to, done) {
 }
 
 function filterLinksToUnlink(links, done) {
+  links = uniqueKey(links, 'from')
   filter(links, Infinity, function(link, next) {
     linksTo(link.from, link.to, next)
   }, done)
 }
 
 function filterAllLinksToUnlink(links, done) {
+  links = uniqueKey(links, 'from')
   filter(links, Infinity, function(link, next) {
     exists(link.from, function(err, ex) {
       next(err, ex)
@@ -279,7 +283,7 @@ function linkLinks(links, done) {
       var from = link.from
       var to = path.relative(path.dirname(link.from), link.to)
       fs.symlink(to, from, 'junction', function(err) {
-        if (err) return next(err)
+        if (err) return next(new Error('Error linking ' +from+ ' to ' + to + ':\n' + err.message))
         next(null, link)
       })
     })
@@ -293,11 +297,44 @@ function unlinkLinks(links, done) {
       if (err) return next(err)
       var remove = isSymlink ? fs.unlink : rimraf
       return remove(link.from, function(err) {
-        if (err) return next(err)
+        if (err) return next(new Error('Error removing ' +link.from+ ':\n' + err.message))
         next(err, link)
       })
     })
   }, done)
+}
+
+function uniqueKeys(items, key1, key2) {
+  var keys = [].slice.call(arguments, 1)
+  return items.filter(function(item, index, arr) {
+    return indexOf(items, function(otherItem) {
+      return keys.every(function(key) {
+        return item[key] === otherItem[key]
+      })
+    }) === index
+  })
+}
+
+function indexOf(items, fn) {
+  return items.reduce(function(foundIndex, item, index) {
+    if (foundIndex !== -1) return foundIndex
+    if (fn(item)) return index
+    return foundIndex
+  }, -1)
+}
+
+function uniqueKey(items, key) {
+  var values = items.map(function(item) {
+    return item[key]
+  })
+  values = unique(values)
+  return items.filter(function(item) {
+    if (!values.length) return
+    var indexOfValue = values.indexOf(item[key])
+    if (indexOfValue === -1) return false
+    values.splice(indexOfValue, 1)
+    return true
+  })
 }
 
 function unique(arr) {
@@ -329,7 +366,11 @@ function filter(arr, num, filterFn, done) {
 }
 
 function exists(filepath, done) {
-  fs.exists(filepath, function(exists) {
-    done(null, exists)
+  fs.lstat(filepath, function(err, stat) {
+    if (err) {
+      if (err.code !== 'ENOENT') return done(err)
+      return done(null, false)
+    }
+    done(null, !!stat)
   })
 }
