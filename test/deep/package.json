@@ -1,0 +1,12 @@
+{
+  "name": "deep",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "deep-a": "file:./a"
+  }
+}
+
+
+
+
