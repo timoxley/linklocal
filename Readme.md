@@ -5,6 +5,8 @@
 Requires npm 2.0.0 and above.
 Links both development and production dependencies.
 
+[![Build Status](https://travis-ci.org/timoxley/linklocal.svg?branch=master)](https://travis-ci.org/timoxley/linklocal)
+
 ## Installation
 
 ```
