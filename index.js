@@ -293,7 +293,7 @@ function linkLinks(links, done) {
       var from = link.from
       var to = link.to
       
-      // Junctions don't support dangling symlinks
+      // Junction points can't be relative
       if (symlinkType!=='junction') {
         to = path.relative(path.dirname(from), to)
       }
