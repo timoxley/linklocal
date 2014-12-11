@@ -7,6 +7,15 @@ var mkdirp = require('mkdirp')
 var rimraf = require('rimraf')
 var assert = require('assert')
 var map = require('map-limit')
+var os = require('os')
+
+// Use junctions on Windows < Vista (6.0),
+// Vista and later support regular symlinks.
+if (os.platform()=='win32' && parseInt(os.release())<6) {
+  var symlinkType = 'junction'
+} else {
+  symlinkType = 'dir'
+}
 
 module.exports = function linklocal(dirpath, _done) {
   function done(err, items) {
@@ -280,9 +289,16 @@ function linkLinks(links, done) {
   map(links, Infinity, function(link, next) {
     mkdirp(path.dirname(link.from), function(err) {
       if (err && err.code !== 'EEXISTS') return next(err)
+      
       var from = link.from
-      var to = path.relative(path.dirname(link.from), link.to)
-      fs.symlink(to, from, 'junction', function(err) {
+      var to = link.to
+      
+      // Junction points can't be relative
+      if (symlinkType!=='junction') {
+        to = path.relative(path.dirname(from), to)
+      }
+
+      fs.symlink(to, from, symlinkType, function(err) {
         if (err) return next(new Error('Error linking ' +from+ ' to ' + to + ':\n' + err.message))
         next(null, link)
       })
