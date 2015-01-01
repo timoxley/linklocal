@@ -25,7 +25,6 @@
 * Add new formatting aliases.
 * Fix bulk example - Yoshua Wuyts.
 
-
 2.3.0 - 2.3.1 / 2014-11-12
 ==================
 
