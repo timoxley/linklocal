@@ -180,7 +180,9 @@ function readPackage(dirpath, done) {
     if (err) return done(err)
     try {
     var pkg = JSON.parse(data)
-    } catch(e) {return done(e)}
+    } catch(e) {
+      return done(new Error('Error parsing JSON '+pkgpath+':'+ e.message))
+    }
     pkg.dirpath = dirpath
     return done(null, pkg)
   })
