@@ -1,6 +1,6 @@
 
-2.4.3 / 2015-01-02
-==================
+2.4.3 – 2.4.4 / 2015-01-02
+==========================
 
 * Update commander from 2.5.0 to 2.6.0.
 * Indicate source file for JSON parse errors.
@@ -26,14 +26,14 @@
 * Fix bulk example - Yoshua Wuyts.
 
 2.3.0 - 2.3.1 / 2014-11-12
-==================
+==========================
 
 * Update docs.
 * Add relative/absolute format tokens.
 * Fix linklocal unlink destination paths.
 
 2.2.0 - 2.2.1 / 2014-11-12
-==================
+==========================
 
 * Improve recursive linking.
 * Add --format.

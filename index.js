@@ -181,7 +181,7 @@ function readPackage(dirpath, done) {
     try {
     var pkg = JSON.parse(data)
     } catch(e) {
-      return done(new Error('Error parsing JSON '+pkgpath+':'+ e.message))
+      return done(new Error('Error parsing JSON in '+pkgpath+':\n'+ e.message))
     }
     pkg.dirpath = dirpath
     return done(null, pkg)
