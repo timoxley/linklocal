@@ -23,18 +23,18 @@ linklocal --help
   Options:
 
     -h, --help             output usage information
-    -V, --version          output the version number
-    -u, --unlink           Unlink local dependencies
-    -l, --link             Link local dependencies [default]
-    --list                 List all local dependencies regardless whether they are linked or not.
-    -r, --recursive        Link recursively
     -f, --format [format]  output format
-    --links                Output only symlinks (--format="%s")
-    --files                Output only symlink targets (--format="%h") [default]
-    --long                 Output the symlink to hardlink mapping (--format="%s -> %h")
-    --absolute             Format output paths as absolute paths
+    -l, --link             Link local dependencies [default]
+    -r, --recursive        Link recursively
     -q, --unique           Only unique lines of output
+    -u, --unlink           Unlink local dependencies
+    --absolute             Format output paths as absolute paths
+    --files                Output only symlink targets (--format="%h") [default]
+    --links                Output only symlinks (--format="%s")
+    --list                 Only list local dependencies. Does not link.
+    --long                 Output the symlink to hardlink mapping (--format="%s -> %h")
     --no-summary           Exclude summary i.e. "Listed 22 dependencies"
+    -V, --version          output the version number
 
   Examples
 
