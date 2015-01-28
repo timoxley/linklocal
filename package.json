@@ -4,7 +4,7 @@
   "description": "Install local dependencies as symlinks.",
   "main": "index.js",
   "scripts": {
-    "test": "tape test/*.js"
+    "test": "tape test/*.js | tap-spec"
   },
   "engines": {
     "npm": ">=2.0.0"
@@ -12,7 +12,8 @@
   "author": "Tim Oxley <secoif@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "tape": "~3.0.0"
+    "tap-spec": "^2.2.0",
+    "tape": "^3.4.0"
   },
   "dependencies": {
     "commander": "^2.6.0",
