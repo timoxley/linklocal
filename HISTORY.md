@@ -1,4 +1,11 @@
 
+2.5.0 / 2015-01-28
+==================
+
+* Add --no-summary option.
+* Sort options alphabetically.
+* Update tape to 3.4.0, make tests pretty with tap-spec.
+
 2.4.3 – 2.4.4 / 2015-01-02
 ==========================
 
