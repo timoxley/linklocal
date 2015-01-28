@@ -34,6 +34,7 @@ linklocal --help
     --long                 Output the symlink to hardlink mapping (--format="%s -> %h")
     --absolute             Format output paths as absolute paths
     -q, --unique           Only unique lines of output
+    --no-summary           Exclude summary i.e. "Listed 22 dependencies"
 
   Examples
 

@@ -17,6 +17,7 @@ program
   .option('--long', 'Output the symlink to hardlink mapping (--format="%s -> %h")')
   .option('--absolute', 'Format output paths as absolute paths')
   .option('-q, --unique', 'Only unique lines of output')
+  .option('--no-summary', 'Exclude summary i.e. "Listed 22 dependencies"')
   .usage('[options] <dir>')
 
 program.on('--help', function(){
@@ -71,7 +72,6 @@ if (program.absolute) format = format.toUpperCase()
 fn(dir, function(err, items) {
   if (err) throw err
   items = items || []
-  var commandName = command[0].toUpperCase() + command.slice(1)
   var formattedItems = getFormattedItems(items, format)
   .filter(Boolean)
 
@@ -86,8 +86,7 @@ fn(dir, function(err, items) {
     console.log('%s', str)
   })
 
-  var length = program.list ? formattedItems.length : items.length
-  console.error('\n%sed %d dependenc' + (1 == length ? 'y' : 'ies'), commandName, length)
+  summary(command, program.list ? formattedItems: items)
 })
 
 var formats = {
@@ -117,4 +116,11 @@ function formatOut(input, format) {
     output = output.replace(new RegExp(key, 'gm'), formats[key](input))
   }
   return output
+}
+
+function summary(commandName, items) {
+  if (!program['summary']) return
+  var length = items.length
+  var commandName = command[0].toUpperCase() + command.slice(1)
+  console.error('\n%sed %d dependenc' + (1 == length ? 'y' : 'ies'), commandName, length)
 }
