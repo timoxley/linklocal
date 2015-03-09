@@ -67,7 +67,6 @@ linklocal --help
 
 e.g. test/banana/package.json.
 
-Note `file:` dependencies are [standard syntax in npm 2.x](https://docs.npmjs.com/files/package.json#local-paths), just that npm will copy the dependency into place, rather than symlink it.
 ```json
 {
   "name": "banana",
@@ -78,7 +77,7 @@ Note `file:` dependencies are [standard syntax in npm 2.x](https://docs.npmjs.co
   }
 }
 ```
-
+Note `file:` dependencies are [standard syntax in npm 2.x](https://docs.npmjs.com/files/package.json#local-paths), just that npm will copy the dependency into place, rather than symlink it.
 ```
 # from test/banana
 > linklocal
