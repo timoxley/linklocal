@@ -2,7 +2,7 @@
 
 ### Create symlinks to local dependencies in your package.json.
 
-Requires npm 2.0.0 and above.
+Requires npm 2.0.0 and above to get [support for local paths as dependencies](https://docs.npmjs.com/files/package.json#local-paths).
 Links both development and production dependencies.
 
 [![Build Status](https://travis-ci.org/timoxley/linklocal.svg?branch=master)](https://travis-ci.org/timoxley/linklocal)
@@ -63,6 +63,20 @@ linklocal --help
 ### Linking
 
 `linklocal` creates symlinks to any local dependencies it finds in your package.json.
+
+e.g. test/banana/package.json.
+
+Note `file:` dependencies are [standard syntax in npm 2.x](https://docs.npmjs.com/files/package.json#local-paths), just that npm will copy the dependency into place, rather than symlink it.
+```json
+{
+  "name": "banana",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "apple": "file:../apple"
+  }
+}
+```
 
 ```
 # from test/banana
