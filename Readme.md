@@ -2,6 +2,8 @@
 
 ### Create symlinks to local dependencies in your package.json.
 
+`linklocal` is a development tool for building modular applications. It gives you more more expressive power than simple files and folders, yet requires far less overhead than versioning and publishing packages to a local registry.
+
 Requires npm 2.0.0 and above in order for npm to recogise [local paths as dependencies](https://docs.npmjs.com/files/package.json#local-paths).
 
 Links both development and production dependencies.
@@ -79,7 +81,7 @@ npm 2.0.0 [supports specifying local dependencies in your package.json](https://
 
 `npm install` will copy (and `npm install`) the package into the target's node_module's hierarchy.
 
-This is not an ideal workflow during development as any time you modify your local dependency, you must reinstall it
+This is not an ideal workflow during development: any time you modify your local dependency, you must reinstall it
 in every location that depends on it. If you do not update all copies, you will have different versions of the same code, probably under the same version number.
 
 Global `npm link` dependencies are also not ideal as packages clobber each other across projects.
@@ -171,11 +173,9 @@ node_modules/@nuts/almond -> ../almond
 Linked 3 dependencies
 ```
 
-
-
 ## Recommendations
 
-`linklocal` does not install dependencies of linked dependencies. To have dependencies installed, use [timoxley/bulk](https://github.com/timoxley/bulk) in a script like:
+`linklocal` does not install dependencies of linked dependencies. To have dependencies installed, use [timoxley/bulk](https://github.com/timoxley/bulk) or `xargs` in a script like:
 ```json
 {
   "name": "my-app",
