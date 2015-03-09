@@ -2,7 +2,8 @@
 
 ### Create symlinks to local dependencies in your package.json.
 
-Requires npm 2.0.0 and above to get [support for local paths as dependencies](https://docs.npmjs.com/files/package.json#local-paths).
+Requires npm 2.0.0 and above in order for npm to recogise [local paths as dependencies](https://docs.npmjs.com/files/package.json#local-paths).
+
 Links both development and production dependencies.
 
 [![Build Status](https://travis-ci.org/timoxley/linklocal.svg?branch=master)](https://travis-ci.org/timoxley/linklocal)
