@@ -2,7 +2,7 @@
 
 ### Create symlinks to local dependencies in your package.json.
 
-`linklocal` is a development tool for building modular applications. It gives you more more expressive power than simple files and folders, yet requires far less overhead than versioning and publishing packages to a local registry.
+`linklocal` is a development tool that the reduces overheads of breaking your application into small packages. It gives you more expressive power than simple files and folders, yet requires far less overhead than versioning and publishing packages to a local private registry.
 
 Requires npm 2.0.0 and above in order for npm to recogise [local paths as dependencies](https://docs.npmjs.com/files/package.json#local-paths).
 
