@@ -63,7 +63,7 @@ linklocal --help
 
 ## About
 
-npm 2.0.0 supports specifying local dependencies in your package.json:
+npm 2.0.0 [supports specifying local dependencies in your package.json](https://docs.npmjs.com/files/package.json#local-paths):
 
 ```
 > npm install --save ../apple
