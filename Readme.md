@@ -6,8 +6,6 @@
 
 Requires npm 2.0.0 and above in order for npm to recogise [local paths as dependencies](https://docs.npmjs.com/files/package.json#local-paths).
 
-Links both development and production dependencies.
-
 [![Build Status](https://travis-ci.org/timoxley/linklocal.svg?branch=master)](https://travis-ci.org/timoxley/linklocal)
 
 ## Installation
@@ -90,6 +88,8 @@ By symlinking local dependencies while in development,
 changes can be instantly consumed by dependees, effects
 are limited to the current package and you can be more
 certain local dependees are using the latest changes.
+
+`linklocal` symlinks both development and production dependencies.
 
 ## Examples
 
