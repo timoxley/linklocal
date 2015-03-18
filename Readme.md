@@ -8,6 +8,9 @@ Requires npm 2.0.0 and above in order for npm to recogise [local paths as depend
 
 [![Build Status](https://travis-ci.org/timoxley/linklocal.svg?branch=master)](https://travis-ci.org/timoxley/linklocal)
 
+[![NPM](https://nodei.co/npm-dl/linklocal.png?months=6&height=3)](https://nodei.co/npm-dl/linklocal/)
+[![NPM](https://nodei.co/npm/linklocal.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/linklocal/)
+
 ## Installation
 
 ```
