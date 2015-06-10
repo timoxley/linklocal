@@ -24,6 +24,7 @@ module.exports = function linklocal(dirpath, _done) {
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
   assert.equal(typeof done, 'function', 'done should be a function')
 
+  // please enjoy this pyramid
   readPackage(dirpath, function(err, pkg) {
     if (err) return done(err)
     getLinks(pkg, function(err, links) {
@@ -291,10 +292,10 @@ function linkLinks(links, done) {
   map(links, Infinity, function(link, next) {
     mkdirp(path.dirname(link.from), function(err) {
       if (err && err.code !== 'EEXISTS') return next(err)
-      
+
       var from = link.from
       var to = link.to
-      
+
       // Junction points can't be relative
       if (symlinkType!=='junction') {
         to = path.relative(path.dirname(from), to)
