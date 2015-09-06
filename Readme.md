@@ -184,7 +184,7 @@ Linked 3 dependencies
   "name": "my-app",
   "scripts": {
     "dev": "linklocal link -r && linklocal list -r | bulk -c 'npm install --production'",
-    "prepublish": "if [[ $NODE_ENV != 'production' ]]; then npm run dev; fi"
+    "prepublish": "if [ \"$NODE_ENV\" != \"production\" ]; then npm run dev; fi"
   }
 }
 ```
