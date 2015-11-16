@@ -220,10 +220,12 @@ function getDependencies(pkg) {
 }
 
 function isLocalDependency(val) {
+  var ignoreExt = ".tgz"
   return (
-    val.indexOf('.') === 0 ||
-    val.indexOf('/') === 0 ||
-    val.indexOf('file:') === 0
+    (val.indexOf('.') === 0 ||
+     val.indexOf('/') === 0 ||
+     val.indexOf('file:') === 0) &&
+    val.lastIndexOf(ignoreExt) !== val.length - ignoreExt.length
   )
 }
 

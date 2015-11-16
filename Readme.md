@@ -92,7 +92,7 @@ changes can be instantly consumed by dependees, effects
 are limited to the current package and you can be more
 certain local dependees are using the latest changes.
 
-`linklocal` symlinks both development and production dependencies.
+`linklocal` symlinks both development and production dependencies, and ignores modules packed by NPM (`.tgz`).
 
 ## Examples
 
