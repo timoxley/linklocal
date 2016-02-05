@@ -1,5 +1,6 @@
 language: node_js
 before_install: npm install npm -g
+before_script: npm cache clear
 node_js:
   - "5"
   - "4"
