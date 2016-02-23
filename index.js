@@ -18,6 +18,7 @@ if (os.platform()=='win32' && parseInt(os.release())<6) {
 }
 
 module.exports = function linklocal(dirpath, _done) {
+
   function done(err, items) {
     _done(err, items || [])
   }
@@ -44,6 +45,30 @@ module.exports = function linklocal(dirpath, _done) {
 }
 
 module.exports.link = module.exports
+
+module.exports.link.named = function(dirpath, done, options) {
+  assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
+  assert.equal(typeof done, 'function', 'done should be a function')
+
+  var getLinksFn = options.recursive ? getLinksRecursive : getLinks
+
+  readPackage(dirpath, function(err, pkg) {
+    if (err) return done(err)
+    getLinksFn(pkg, function(err, links) {
+      if (err) return done(err)
+      filterAllLinksToUnlink(links, function(err, toUnlink) {
+        if (err) return done(err)
+        unlinkLinks(toUnlink, function(err) {
+          if (err) return done(err)
+          linkLinks(links, function(err) {
+            if (err) return done(err)
+            done(null, links)
+          })
+        })
+      })
+    }, options);
+  });
+}
 
 module.exports.link.recursive = function linklocalRecursive(dirpath, done) {
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
@@ -83,6 +108,25 @@ module.exports.unlink = function unlinklocal(dirpath, done) {
   })
 }
 
+module.exports.unlink.named = function(dirpath, done, options) {
+
+  var getLinksFn = options.recursive ? getLinksRecursive : getLinks
+
+  readPackage(dirpath, function(err, pkg) {
+    if (err) return done(err)
+    getLinksFn(pkg, function(err, links) {
+      if (err) return done(err)
+      filterLinksToUnlink(links, function(err, toUnlink) {
+        if (err) return done(err)
+        unlinkLinks(toUnlink, function(err) {
+          if (err) return done(err)
+          done(null, toUnlink)
+        })
+      })
+    }, options)
+  })
+}
+
 module.exports.unlink.recursive = function unlinklocalRecursive(dirpath, done) {
   assert.equal(typeof dirpath, 'string', 'dirpath should be a string')
   assert.equal(typeof done, 'function', 'done should be a function')
@@ -116,7 +160,7 @@ module.exports.list.recursive = function listRecursive(dirpath, done){
   })
 }
 
-function getLinksRecursive(pkg, done) {
+function getLinksRecursive(pkg, done, options) {
   var _cache = _cache || {}
 
   return (function _getLinksRecursive(pkg, done) {
@@ -131,7 +175,7 @@ function getLinksRecursive(pkg, done) {
           _getLinksRecursive(pkg, next)
         })
       }, done)
-    })
+    }, options)
   })(pkg, function(err) {
     if (err) return done(err)
     var result = Object.keys(_cache).reduce(function(result, key) {
@@ -142,7 +186,7 @@ function getLinksRecursive(pkg, done) {
   })
 }
 
-function getLocalDependenciesRecursive(pkg, done) {
+function getLocalDependenciesRecursive(pkg, done, options) {
   var _cache = _cache || {}
 
   return (function _getLocalDependenciesRecursive(pkg, done) {
@@ -156,7 +200,7 @@ function getLocalDependenciesRecursive(pkg, done) {
           _getLocalDependenciesRecursive(childPkg, next)
         })
       }, done)
-    })
+    }, options)
   })(pkg, function(err) {
     if (err) return done(err)
     return done(null, Object.keys(_cache))
@@ -189,24 +233,31 @@ function readPackage(dirpath, done) {
   })
 }
 
-function getLocalDependencies(pkg, done) {
+function getLocalDependencies(pkg, done, options) {
+
   assert.equal(typeof pkg, 'object', 'pkg should be an object')
   var deps = getDependencies(pkg)
-  var localDependencies = getPackageLocalDependencies(pkg)
+  var localDependencies = getPackageLocalDependencies(pkg, options)
   .map(function(name) {
     var pkgPath = deps[name]
     pkgPath = pkgPath.replace(/^file:/g, '')
+
+    if (options && options.packages.length > 0) {
+      return path.resolve(options.cwd, name)
+    }
+
     return path.resolve(pkg.dirpath, pkgPath)
   })
+
   getRealPaths(localDependencies, done)
 }
 
-function getPackageLocalDependencies(pkg) {
+function getPackageLocalDependencies(pkg, options) {
   assert.equal(typeof pkg, 'object', 'pkg should be an object')
   var deps = getDependencies(pkg)
   return Object.keys(deps).filter(function(name) {
     var dep = deps[name]
-    return isLocalDependency(dep)
+    return isLocalDependency(dep, name, options)
   })
 }
 
@@ -219,8 +270,13 @@ function getDependencies(pkg) {
   return deps
 }
 
-function isLocalDependency(val) {
+function isLocalDependency(val, name, options) {
   var ignoreExt = ".tgz"
+  
+  if (options && options.packages) {
+    return options.packages.indexOf(name) !== -1
+  }
+  
   return (
     (val.indexOf('.') === 0 ||
      val.indexOf('/') === 0 ||
@@ -229,7 +285,7 @@ function isLocalDependency(val) {
   )
 }
 
-function getLinks(pkg, done) {
+function getLinks(pkg, done, options) {
   getLocalDependencies(pkg, function(err, localDependencies) {
     if (err) return done(err)
     var destination = path.join(pkg.dirpath, 'node_modules')
@@ -243,7 +299,7 @@ function getLinks(pkg, done) {
       })
       done(null, links)
     })
-  })
+  }, options)
 }
 
 function isSymbolicLink(filepath, done) {

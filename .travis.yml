@@ -1,8 +1,8 @@
 sudo: required
 dist: trusty
 language: node_js
-before_install: npm install npm -g
 before_script: npm cache clear
+before_install: npm install -g npm@latest
 node_js:
   - "5"
   - "4"

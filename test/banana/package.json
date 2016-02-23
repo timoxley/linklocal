@@ -1,7 +1,13 @@
 {
   "name": "banana",
   "version": "1.0.0",
-  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tim Oxley <secoif@gmail.com>",
+  "license": "MIT",
   "dependencies": {
     "apple": "file:../apple"
   }

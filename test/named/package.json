@@ -1,0 +1,10 @@
+{
+  "name": "named",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "namedProject1": "https://somelocation/to/namedProject1",
+    "banana": "file:../banana",
+    "localPacked": "file:../npmPack-1.0.0.tgz"
+  }
+}
