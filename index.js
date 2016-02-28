@@ -9,13 +9,9 @@ var assert = require('assert')
 var map = require('map-limit')
 var os = require('os')
 
-// Use junctions on Windows < Vista (6.0),
-// Vista and later support regular symlinks.
-if (os.platform()=='win32' && parseInt(os.release())<6) {
-  var symlinkType = 'junction'
-} else {
-  symlinkType = 'dir'
-}
+// Always use "junctions" on Windows. Even though support for "symbolic links" was added in Vista+, users by default
+// lack permission to create them and administrators need elevation / UAC disabled if using "symbolic links"
+var symlinkType = (os.platform() === 'win32') ? 'junction' : 'dir'
 
 module.exports = function linklocal(dirpath, _done) {
 
