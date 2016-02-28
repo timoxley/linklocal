@@ -12,6 +12,7 @@ program
   .option('-r, --recursive', 'Link recursively')
   .option('-q, --unique', 'Only unique lines of output')
   .option('-u, --unlink', 'Unlink local dependencies')
+  .option('-n, --named', 'Link only named packages, last argument is cwd')
   .option('--absolute', 'Format output paths as absolute paths')
   .option('--files', 'Output only symlink targets (--format="%h") [default]')
   .option('--links', 'Output only symlinks (--format="%s")')
@@ -54,12 +55,17 @@ if (program.list) command = 'list'
 
 program.args[0] = program.args[0] || ''
 
-var dir = path.resolve(process.cwd(), program.args[0]) || process.cwd()
+var named = !!program.named
+var dir = path.resolve(process.cwd(), program.args[0]) || process.cwd() 
 var pkg = path.resolve(dir, 'package.json')
 var recursive = !!program.recursive
 
 fn = linklocal[command]
 if (recursive) fn = fn.recursive
+if (named) {
+  fn = linklocal[command].named
+  dir = process.cwd()
+}
 
 var format = ''
 if (program.files) format = '%h'
@@ -68,6 +74,16 @@ if (program.long) format = '%s -> %h'
 if (!format) format = program.format
 
 if (program.absolute) format = format.toUpperCase()
+
+if (named) {
+  options = {
+    cwd: program.args[program.args.length - 1],
+    packages: program.args.slice(0, program.args.length - 1),
+    recursive: recursive
+  }
+}
+
+else options = {};
 
 fn(dir, function(err, items) {
   if (err) throw err
@@ -87,7 +103,7 @@ fn(dir, function(err, items) {
   })
 
   summary(command, program.list ? formattedItems: items)
-})
+}, options)
 
 var formats = {
   '%S': function(obj) {
