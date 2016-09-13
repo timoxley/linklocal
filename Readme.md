@@ -41,31 +41,25 @@ linklocal --help
     --no-summary           Exclude summary i.e. "Listed 22 dependencies"
     -V, --version          output the version number
 
-  Examples
+  Examples:
 
-    $ linklocal                                           # link local deps in current dir
-    $ linklocal link                                      # link local deps in current dir
-    $ linklocal -r                                        # link local deps recursively
-    $ linklocal unlink                                    # unlink only in current dir
-    $ linklocal unlink -r                                 # unlink recursively
+    linklocal                                           # link local deps in current dir
+    linklocal link                                      # link local deps in current dir
+    linklocal -r                                        # link local deps recursively
+    linklocal unlink                                    # unlink only in current dir
+    linklocal unlink -r                                 # unlink recursively
 
-    $ linklocal list                                      # list all local deps, ignores link status
-    $ linklocal list -r                                   # list all local deps recursively, ignoring link status
+    linklocal list                                      # list all local deps, ignores link status
+    linklocal list -r                                   # list all local deps recursively, ignoring link status
 
-    $ linklocal -- mydir                                  # link local deps in mydir
-    $ linklocal unlink -- mydir                           # unlink local deps in mydir
+    linklocal -- mydir                                  # link local deps in mydir
+    linklocal unlink -- mydir                           # unlink local deps in mydir
+    linklocal --named pkgname ../to/pkg                 # link local dep by name/path
+    linklocal --named pkgname1 pkgname2 ../to/pkg       # link local deps by name/path
+    linklocal unlink --named pkgname ../to/pkg          # unlink local dep by name/
+    linklocal --named  -r pkgname ../to/pkg             # link local deps recursively by name/
 
-    $ linklocal list                                      # list all local deps, ignores link status   
-    $ linklocal list -r                                   # list all local deps recursively, ignoring link status    
-
-    $ linklocal --named pkgname ../to/pkg                 # link local dep by name/path
-    $ linklocal --named pkgname1 pkgname2 ../to/pkg       # link local deps by name/path
-    $ linklocal unlink --named pkgname ../to/pkg          # unlink local dep by name/
-    $ linklocal --named  -r pkgname ../to/pkg             # link local deps recursively by name/
-
-
-
-  Formats
+  Formats:
 
     %s: relative path to symlink
     %S: absolute path to symlink
