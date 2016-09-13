@@ -21,7 +21,7 @@ program
   .option('--no-summary', 'Exclude summary i.e. "Listed 22 dependencies"')
   .version(pkg.version)
 
-program.on('--help', function(){
+program.on('--help', function () {
   console.info('  Examples')
   console.info('')
   console.info('    $ linklocal                 # link local deps in current dir')
@@ -56,11 +56,10 @@ if (program.list) command = 'list'
 program.args[0] = program.args[0] || ''
 
 var named = !!program.named
-var dir = path.resolve(process.cwd(), program.args[0]) || process.cwd() 
-var pkg = path.resolve(dir, 'package.json')
+var dir = path.resolve(process.cwd(), program.args[0]) || process.cwd()
 var recursive = !!program.recursive
 
-fn = linklocal[command]
+var fn = linklocal[command]
 if (recursive) fn = fn.recursive
 if (named) {
   fn = linklocal[command].named
@@ -75,58 +74,54 @@ if (!format) format = program.format
 
 if (program.absolute) format = format.toUpperCase()
 
-if (named) {
-  options = {
-    cwd: program.args[program.args.length - 1],
-    packages: program.args.slice(0, program.args.length - 1),
-    recursive: recursive
-  }
+var options = !named ? {} : {
+  cwd: program.args[program.args.length - 1],
+  packages: program.args.slice(0, program.args.length - 1),
+  recursive: recursive
 }
 
-else options = {};
-
-fn(dir, function(err, items) {
+fn(dir, function (err, items) {
   if (err) throw err
   items = items || []
   var formattedItems = getFormattedItems(items, format)
   .filter(Boolean)
 
   if (program.unique) {
-    formattedItems = formattedItems.filter(function(item, index, arr) {
+    formattedItems = formattedItems.filter(function (item, index, arr) {
       // uniqueness
       return arr.lastIndexOf(item) === index
     })
   }
 
-  formattedItems.forEach(function(str) {
+  formattedItems.forEach(function (str) {
     console.log('%s', str)
   })
 
-  summary(command, program.list ? formattedItems: items)
+  summary(command, program.list ? formattedItems : items)
 }, options)
 
 var formats = {
-  '%S': function(obj) {
+  '%S': function (obj) {
     return obj.from
   },
-  '%H': function(obj) {
+  '%H': function (obj) {
     return obj.to
   },
-  '%s': function(obj) {
+  '%s': function (obj) {
     return path.relative(process.cwd(), obj.from)
   },
-  '%h': function(obj) {
+  '%h': function (obj) {
     return path.relative(process.cwd(), obj.to)
   }
 }
 
-function getFormattedItems(items, format) {
-  return items.map(function(item) {
+function getFormattedItems (items, format) {
+  return items.map(function (item) {
     return formatOut(item, format)
   })
 }
 
-function formatOut(input, format) {
+function formatOut (input, format) {
   var output = format
   for (var key in formats) {
     output = output.replace(new RegExp(key, 'gm'), formats[key](input))
@@ -134,9 +129,9 @@ function formatOut(input, format) {
   return output
 }
 
-function summary(commandName, items) {
+function summary (commandName, items) {
   if (!program['summary']) return
   var length = items.length
-  var commandName = command[0].toUpperCase() + command.slice(1)
-  console.error('\n%sed %d dependenc' + (1 == length ? 'y' : 'ies'), commandName, length)
+  commandName = command[0].toUpperCase() + command.slice(1)
+  console.error('\n%sed %d dependenc' + (length === 1 ? 'y' : 'ies'), commandName, length)
 }

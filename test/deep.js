@@ -1,13 +1,11 @@
-"use strict"
+'use strict'
 
 var test = require('tape')
 
-var fs = require("fs")
 var path = require('path')
-var exec = require('child_process').exec
 var rimraf = require('rimraf')
 
-var linklocal = require("../")
+var linklocal = require('../')
 
 var deep = path.resolve(__dirname, 'deep')
 var deepA = path.resolve(deep, 'deep-a')
@@ -21,10 +19,10 @@ var expectedLinks = [
   path.resolve(deepB, 'node_modules/deep-d'),
   path.resolve(deepC, 'node_modules/deep-d'),
   path.resolve(deepD, 'node_modules/deep-a'),
-  path.resolve(deep,  'node_modules/deep-a')
+  path.resolve(deep, 'node_modules/deep-a')
 ]
 
-function setup() {
+function setup () {
   rimraf.sync(path.resolve(deep, 'node_modules'))
   rimraf.sync(path.resolve(deepA, 'node_modules'))
   rimraf.sync(path.resolve(deepB, 'node_modules'))
@@ -32,9 +30,9 @@ function setup() {
   rimraf.sync(path.resolve(deepD, 'node_modules'))
 }
 
-test('can link deep', function(t) {
+test('can link deep', function (t) {
   setup()
-  linklocal.recursive(deep, function(err, linked) {
+  linklocal.recursive(deep, function (err, linked) {
     t.ifError(err)
     t.ok(linked)
     t.deepEqual(linked.map(getFrom).sort(), expectedLinks.sort())
@@ -42,12 +40,12 @@ test('can link deep', function(t) {
   })
 })
 
-test('can unlink nested', function(t) {
+test('can unlink nested', function (t) {
   setup()
-  linklocal.recursive(deep, function(err, linked) {
+  linklocal.recursive(deep, function (err, linked) {
     t.ifError(err)
     t.ok(linked)
-    linklocal.unlink.recursive(deep, function(err, linked) {
+    linklocal.unlink.recursive(deep, function (err, linked) {
       t.ifError(err)
       t.ok(linked)
       t.deepEqual(linked.map(getFrom).sort(), expectedLinks.sort())
@@ -56,6 +54,6 @@ test('can unlink nested', function(t) {
   })
 })
 
-function getFrom(item) {
+function getFrom (item) {
   return item.from
 }

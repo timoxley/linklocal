@@ -4,7 +4,7 @@
   "description": "Install local dependencies as symlinks.",
   "main": "index.js",
   "scripts": {
-    "test": "nyc -s tape test/*.js | tap-spec && nyc report --reporter=text --reporter=html"
+    "test": "nyc -s tape test/*.js | tap-spec && nyc report --reporter=text --reporter=html && standard"
   },
   "engines": {
     "npm": ">=2.0.0"
@@ -13,6 +13,7 @@
   "license": "MIT",
   "devDependencies": {
     "nyc": "^8.1.0",
+    "standard": "^8.0.0",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.0"
   },
