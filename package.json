@@ -12,15 +12,15 @@
   "author": "Tim Oxley <secoif@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "tap-spec": "^4.1.0",
-    "tape": "^4.2.0"
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.0"
   },
   "dependencies": {
-    "commander": "~2.8.1",
+    "commander": "~2.9.0",
     "debug": "~2.2.0",
     "map-limit": "0.0.1",
     "mkdirp": "~0.5.1",
-    "rimraf": "~2.4.3"
+    "rimraf": "~2.5.4"
   },
   "bin": {
     "linklocal": "bin/linklocal.js"
