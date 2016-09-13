@@ -4,7 +4,7 @@
   "description": "Install local dependencies as symlinks.",
   "main": "index.js",
   "scripts": {
-    "test": "tape test/*.js | tap-spec"
+    "test": "nyc -s tape test/*.js | tap-spec && nyc report --reporter=text --reporter=html"
   },
   "engines": {
     "npm": ">=2.0.0"
@@ -12,6 +12,7 @@
   "author": "Tim Oxley <secoif@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "nyc": "^8.1.0",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.0"
   },
@@ -42,5 +43,12 @@
   "bugs": {
     "url": "https://github.com/timoxley/linklocal/issues"
   },
-  "homepage": "https://github.com/timoxley/linklocal"
+  "homepage": "https://github.com/timoxley/linklocal",
+  "nyc": {
+    "cache": true,
+    "exclude": [
+      "test/*.js",
+      "node_modules"
+    ]
+  }
 }
