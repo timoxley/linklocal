@@ -8,9 +8,8 @@ var assert = require('assert')
 var map = require('map-limit')
 var os = require('os')
 
-// Use junctions on Windows < Vista (6.0),
-// Vista and later support regular symlinks.
-if (os.platform() === 'win32' && parseInt(os.release()) < 6) {
+// Use junctions on Windows
+if (os.platform() === 'win32') {
   var symlinkType = 'junction'
 } else {
   symlinkType = 'dir'
