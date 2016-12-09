@@ -12,10 +12,10 @@
   "author": "Tim Oxley <secoif@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "nyc": "^8.1.0",
-    "standard": "^8.0.0",
+    "nyc": "^10.0.0",
+    "standard": "^8.6.0",
     "tap-spec": "^4.1.1",
-    "tape": "^4.6.0"
+    "tape": "^4.6.3"
   },
   "dependencies": {
     "commander": "~2.9.0",
