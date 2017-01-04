@@ -218,6 +218,18 @@ When linking local named packages, you may do so regularly or with recursion. Th
 * [district](https://github.com/hughsk/district)
 * [symlink](https://github.com/clux/symlink)
 
+## Contributors
+
+```
+111	Tim Oxley      90.2%
+4	Yoshua Wuyts     3.3%
+3	ben_cripps       2.4%
+2	Vincent Weevers  1.6%
+1	Craig Jefferds   0.8%
+1	amalygin         0.8%
+1	Mikael Brevik    0.8%
+```
+
 # License
 
 MIT
