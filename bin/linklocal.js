@@ -24,21 +24,22 @@ program
 program.on('--help', function () {
   console.info('  Examples:')
   console.info('')
-  console.info('    linklocal                                           # link local deps in current dir')
-  console.info('    linklocal link                                      # link local deps in current dir')
-  console.info('    linklocal -r                                        # link local deps recursively')
-  console.info('    linklocal unlink                                    # unlink only in current dir')
-  console.info('    linklocal unlink -r                                 # unlink recursively')
+  console.info('    linklocal                                                 # link local deps in current dir')
+  console.info('    linklocal link                                            # link local deps in current dir')
+  console.info('    linklocal -r                                              # link local deps recursively')
+  console.info('    linklocal unlink                                          # unlink only in current dir')
+  console.info('    linklocal unlink -r                                       # unlink recursively')
   console.info('')
-  console.info('    linklocal list                                      # list all local deps, ignores link status')
-  console.info('    linklocal list -r                                   # list all local deps recursively, ignoring link status')
+  console.info('    linklocal list                                            # list all local deps, ignores link status')
+  console.info('    linklocal list -r                                         # list all local deps recursively, ignoring link status')
   console.info('')
-  console.info('    linklocal -- mydir                                  # link local deps in mydir')
-  console.info('    linklocal unlink -- mydir                           # unlink local deps in mydir')
-  console.info('    linklocal --named pkgname ../to/pkg                 # link local dep by name/path')
-  console.info('    linklocal --named pkgname1 pkgname2 ../to/pkg       # link local deps by name/path')
-  console.info('    linklocal unlink --named pkgname ../to/pkg          # unlink local dep by name/')
-  console.info('    linklocal --named  -r pkgname ../to/pkg             # link local deps recursively by name/')
+  console.info('    linklocal -- mydir                                        # link local deps in mydir')
+  console.info('    linklocal unlink -- mydir                                 # unlink local deps in mydir')
+  console.info('    linklocal --named pkgname ../to/pkg                       # link local dep by name/path')
+  console.info('    linklocal --named pkgname1 pkgname2 ../to/pkg             # link local deps by name/path')
+  console.info('    linklocal unlink --named pkgname ../to/pkg                # unlink local dep by name/')
+  console.info('    linklocal --named -r pkgname ../to/pkg                    # link local deps recursively by name/')
+  console.info('    linklocal --named -r @scope/pkgname pkgname ../to/pkg     # link local deps recursively by name/ with npm @scope')
   console.info('')
   console.info('  Formats:')
   console.info('')
@@ -81,6 +82,18 @@ var options = !named ? {} : {
   cwd: program.args[program.args.length - 1],
   packages: program.args.slice(0, program.args.length - 1),
   recursive: recursive
+}
+
+if (named) {
+  var renameIndex = program.args.findIndex(function (arg) { return arg.indexOf('@') !== -1 })
+  var rename = renameIndex !== -1 ? program.args[renameIndex + 1] : null
+
+  options = {
+    cwd: program.args[program.args.length - 1],
+    packages: program.args.slice(0, program.args.length - 1),
+    scopeRename: rename,
+    recursive: recursive
+  }
 }
 
 fn(dir, function (err, items) {

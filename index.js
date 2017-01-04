@@ -216,6 +216,10 @@ function getLocalDependencies (pkg, done, options) {
     var pkgPath = deps[name]
     pkgPath = pkgPath.replace(/^file:/g, '')
 
+    if (options && options.scopeRename) {
+      return path.resolve(options.cwd, options.scopeRename)
+    }
+
     if (options && options.packages.length > 0) {
       return path.resolve(options.cwd, name)
     }
@@ -247,6 +251,10 @@ function getDependencies (pkg) {
 function isLocalDependency (val, name, options) {
   var ignoreExt = '.tgz'
 
+  if (options && options.scopeRename && options.packages) {
+    return isScopedDependency(name, options)
+  }
+
   if (options && options.packages) {
     return options.packages.indexOf(name) !== -1
   }
@@ -275,6 +283,10 @@ function getLinks (pkg, done, options) {
     })
   }, options)
 }
+
+function isScopedDependency (name, options) {
+  return name.indexOf('@') !== -1 && options.packages.indexOf(name) !== -1
+};
 
 function isSymbolicLink (filepath, done) {
   exists(filepath, function (err, doesExist) {
