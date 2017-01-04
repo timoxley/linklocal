@@ -220,15 +220,14 @@ When linking local named packages, you may do so regularly or with recursion. Th
 
 ## Contributors
 
-```
-111	Tim Oxley      90.2%
-4	Yoshua Wuyts     3.3%
-3	ben_cripps       2.4%
-2	Vincent Weevers  1.6%
-1	Craig Jefferds   0.8%
-1	amalygin         0.8%
-1	Mikael Brevik    0.8%
-```
+Big thanks to:
+
+* Yoshua Wuyts
+* ben_cripps
+* Vincent Weevers
+* Craig Jefferds
+* amalygin
+* Mikael Brevik
 
 # License
 

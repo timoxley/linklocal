@@ -1,3 +1,18 @@
+2.8.0 / 2017-01-04
+==================
+
+* Add Contributors to Readme
+* Merge pull request #26 from bencripps/master
+* Adding @scope functionality for --named function
+
+2.7.0 / 2016-12-09
+==================
+
+* Add yarn.lock.
+* Use caret instead of tilde for dependencies.
+* Update devDependencies.
+* Merge pull request #27 from jalex/master
+* Fix #22 - Always use Junctions on Windows
 
 2.6.1 / 2016-09-14
 ==================
