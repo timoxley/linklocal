@@ -150,7 +150,7 @@ Unlinked 1 dependency
 
 ### Recursively Linking local dependencies in local dependencies
 
-If your local dependencies themselves might have local dependencies, you can use
+If your local dependencies have local dependencies, you can use
 `linklocal -r` to recursively link all local dependencies:
 
 `bowl` depends on `banana`
