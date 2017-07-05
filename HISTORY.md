@@ -1,3 +1,11 @@
+2.8.1 / 2017-07-04
+==================
+
+* Update dependencies & linting.
+* Remove `npm cache clear` from travis CI setup.
+* Update Readme.md via pull request #32 from tomazy
+* Update Readme.md via pull request #29 from briandipalma
+
 2.8.0 / 2017-01-04
 ==================
 
