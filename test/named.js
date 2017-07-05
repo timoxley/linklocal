@@ -32,8 +32,7 @@ test('will unlink a named package', function (t) {
 
   linklocal.unlink.named(PKG_DIR, function testLinked (err, linked) {
     t.ifError(err)
-    linklocal.unlink(PKG_DIR, function testUnlinked (err, unlinked) {
-      err // ignore error?
+    linklocal.unlink(PKG_DIR, function testUnlinked (_, unlinked) {
       t.ok(unlinked)
       t.end()
     })

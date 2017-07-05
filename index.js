@@ -157,7 +157,7 @@ module.exports.list.recursive = function listRecursive (dirpath, done) {
 }
 
 function getLinksRecursive (pkg, done, options) {
-  var _cache = _cache || {}
+  var _cache = {}
 
   return (function _getLinksRecursive (pkg, done) {
     if (_cache[pkg.dirpath]) return done(null, _cache[pkg.dirpath])
