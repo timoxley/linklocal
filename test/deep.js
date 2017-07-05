@@ -24,10 +24,15 @@ var expectedLinks = [
 
 function setup () {
   rimraf.sync(path.resolve(deep, 'node_modules'))
+  rimraf.sync(path.resolve(deep, 'package-lock.json'))
   rimraf.sync(path.resolve(deepA, 'node_modules'))
+  rimraf.sync(path.resolve(deepA, 'package-lock.json'))
   rimraf.sync(path.resolve(deepB, 'node_modules'))
+  rimraf.sync(path.resolve(deepB, 'package-lock.json'))
   rimraf.sync(path.resolve(deepC, 'node_modules'))
+  rimraf.sync(path.resolve(deepC, 'package-lock.json'))
   rimraf.sync(path.resolve(deepD, 'node_modules'))
+  rimraf.sync(path.resolve(deepD, 'package-lock.json'))
 }
 
 test('can link deep', function (t) {

@@ -20,6 +20,7 @@ var LINKS = Object.freeze([
 
 function setup () {
   rimraf.sync(NODE_MODULES)
+  rimraf.sync(path.join(PKG_DIR, 'package-lock.json'))
 }
 
 test('test is running on npm > 2.0.0', function (t) {

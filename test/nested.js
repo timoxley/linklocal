@@ -27,10 +27,15 @@ var bowlModules = [
 
 function setup () {
   rimraf.sync(path.resolve(salad, 'node_modules'))
+  rimraf.sync(path.resolve(salad, 'package-lock.json'))
   rimraf.sync(path.resolve(bowl, 'node_modules'))
+  rimraf.sync(path.resolve(bowl, 'package-lock.json'))
   rimraf.sync(path.resolve(apple, 'node_modules'))
+  rimraf.sync(path.resolve(apple, 'package-lock.json'))
   rimraf.sync(path.resolve(banana, 'node_modules'))
+  rimraf.sync(path.resolve(banana, 'package-lock.json'))
   rimraf.sync(path.resolve(almond, 'node_modules'))
+  rimraf.sync(path.resolve(almond, 'package-lock.json'))
 }
 
 test('can link nested', function (t) {

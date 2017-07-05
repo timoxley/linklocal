@@ -24,8 +24,11 @@ var LINKS = Object.freeze([
 
 function setup () {
   rimraf.sync(path.resolve(PKG_A, 'node_modules'))
+  rimraf.sync(path.resolve(PKG_A, 'package-lock.json'))
   rimraf.sync(path.resolve(PKG_B, 'node_modules'))
+  rimraf.sync(path.resolve(PKG_B, 'package-lock.json'))
   rimraf.sync(path.resolve(PKG_C, 'node_modules'))
+  rimraf.sync(path.resolve(PKG_C, 'package-lock.json'))
 }
 
 test('link circular dependencies recursive', function (t) {
@@ -71,11 +74,18 @@ test('unlink circular dependencies not linked', function (t) {
 
 test('unlink circular dependencies installed, not linked', function (t) {
   setup()
-  exec('npm install', {cwd: PKG_A}, function (ignoreErr) {
-    linklocal.unlink.recursive(PKG_A, function (err, linked) {
-      t.ifError(err)
-      t.deepEqual(linked, [])
-      t.end()
+  exec('npm --version', function (ignoreErr, obj) {
+    var npmVersion = Number(obj.trim().split('.')[0])
+    exec('npm install', {cwd: PKG_A}, function (ignoreErr) {
+      linklocal.unlink.recursive(PKG_A, function (err, linked) {
+        t.ifError(err)
+        if (npmVersion < 5) {
+          t.deepEqual(linked, [])
+        } else {
+          t.equal(linked.length, 3)
+        }
+        t.end()
+      })
     })
   })
 })
