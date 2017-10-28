@@ -118,7 +118,7 @@ e.g. test/banana/package.json.
   }
 }
 ```
-Note `file:` dependencies are [standard syntax in npm 2.x](https://docs.npmjs.com/files/package.json#local-paths), just that npm will copy the dependency into place, rather than symlink it. That's what `linklocal` is for:
+Note `file:` dependencies are [standard syntax in npm 2.x](https://docs.npmjs.com/files/package.json#local-paths), just so that npm will copy the dependency into place, rather than symlink it. That's what `linklocal` is for:
 ```
 # from test/banana
 # find local dependencies and symlink them
