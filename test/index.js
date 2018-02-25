@@ -87,15 +87,17 @@ test('unlink ignores if package not linked', function (t) {
     t.ifError(err)
     var links = linked.map(getLink).sort()
     t.deepEqual(links, LINKS)
-    fs.unlink(links[0])
-    linklocal.unlink(PKG_DIR, function (err, linked) {
+    fs.unlink(links[0], function (err) {
       t.ifError(err)
-      var expected = LINKS.slice(1)
-      t.deepEqual(linked.map(getLink).sort(), expected)
-      expected.forEach(function (link) {
-        t.notOk(fs.existsSync(link))
+      linklocal.unlink(PKG_DIR, function (err, linked) {
+        t.ifError(err)
+        var expected = LINKS.slice(1)
+        t.deepEqual(linked.map(getLink).sort(), expected)
+        expected.forEach(function (link) {
+          t.notOk(fs.existsSync(link))
+        })
+        t.end()
       })
-      t.end()
     })
   })
 })
