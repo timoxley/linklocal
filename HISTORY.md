@@ -1,3 +1,15 @@
+
+2.8.2 / 2018-03-13
+==================
+
+* Prevent busting exec buffer + speed up npm install step in test.
+* Update dependencies.
+* Fix tests for npm@^5. Hardcode npm@5.0.4 dep as npm >5 is broken.
+* Linting.
+* Readme.md grammar fix by @deltaskelta
+* Add callback to fs.unlink by @BridgeAR
+* Drop CI support for node 0.10 & 0.12, add support for node 9.
+
 2.8.1 / 2017-07-04
 ==================
 
