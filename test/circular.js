@@ -43,7 +43,7 @@ test('link circular dependencies recursive', function (t) {
 
 test('link circular dependencies recursive after install', function (t) {
   setup()
-  exec('npm install', {cwd: PKG_A}, function (err) {
+  exec('npm install --silent --cache-min=Infinity', {cwd: PKG_A}, function (err) {
     t.ifError(err)
     linklocal.link.recursive(PKG_A, function (err, linked) {
       t.ifError(err)
