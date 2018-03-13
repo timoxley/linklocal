@@ -211,8 +211,7 @@ function readPackage (dirpath, done) {
 function getLocalDependencies (pkg, done, options) {
   assert.equal(typeof pkg, 'object', 'pkg should be an object')
   var deps = getDependencies(pkg)
-  var localDependencies = getPackageLocalDependencies(pkg, options)
-  .map(function (name) {
+  var localDependencies = getPackageLocalDependencies(pkg, options).map(function (name) {
     var pkgPath = deps[name]
     pkgPath = pkgPath.replace(/^file:/g, '')
 
@@ -286,7 +285,7 @@ function getLinks (pkg, done, options) {
 
 function isScopedDependency (name, options) {
   return name.indexOf('@') !== -1 && options.packages.indexOf(name) !== -1
-};
+}
 
 function isSymbolicLink (filepath, done) {
   exists(filepath, function (err, doesExist) {
