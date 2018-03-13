@@ -99,8 +99,7 @@ if (named) {
 fn(dir, function (err, items) {
   if (err) throw err
   items = items || []
-  var formattedItems = getFormattedItems(items, format)
-  .filter(Boolean)
+  var formattedItems = getFormattedItems(items, format).filter(Boolean)
 
   if (program.unique) {
     formattedItems = formattedItems.filter(function (item, index, arr) {
