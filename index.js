@@ -278,7 +278,13 @@ function getLinks (pkg, done, options) {
           to: localDependency.dirpath
         }
       })
-      done(null, links)
+      var linksInRootFolder = localDependencyPackages.map(function (localDependency) {
+        return {
+          from: path.resolve(process.cwd(), 'node_modules', localDependency.name),
+          to: localDependency.dirpath,
+        }
+      })
+      done(null, links.concat(linksInRootFolder))
     })
   }, options)
 }
