@@ -278,7 +278,7 @@ function getLinks (pkg, done, options) {
           to: localDependency.dirpath
         }
       })
-      var linksInRootFolder = options.recursive ? localDependencyPackages.map(function (localDependency) {
+      var linksInRootFolder = options && options.recursive ? localDependencyPackages.map(function (localDependency) {
         return {
           from: path.resolve(process.cwd(), 'node_modules', localDependency.name),
           to: localDependency.dirpath,
